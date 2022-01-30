@@ -11,5 +11,5 @@ type User interface {
 	Update(ctx context.Context, user domain.User, pwd string) error
 	Get(ctx context.Context, id int) (domain.User, error)
 	SetSession(ctx context.Context, session domain.Session) error
-	GetSession(ctx context.Context, userID int, refreshToken string) (*domain.Session, error)
+	GetSession(ctx context.Context, userID int, refreshToken string) (domain.Session, error)
 }
