@@ -8,6 +8,7 @@ import (
 	"github.com/imranzahaev/warehouse/internal/domain"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
+	entuser "github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
 )
 
 type UsersRepo struct {
@@ -82,6 +83,21 @@ func (r *UsersRepo) Update(ctx context.Context, user domain.User, password strin
 
 func (r *UsersRepo) Get(ctx context.Context, id int) (domain.User, error) {
 	u, err := r.client.User.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return domain.User{}, domain.ErrUserNotFound
+		}
+		return domain.User{}, err
+	}
+
+	return convertUserToDomain(u), nil
+}
+
+// GetByLogin expects the login will be email
+func (r *UsersRepo) GetByLogin(ctx context.Context, login string) (domain.User, error) {
+	u, err := r.client.User.Query().
+		Where(entuser.Email(login)).
+		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return domain.User{}, domain.ErrUserNotFound

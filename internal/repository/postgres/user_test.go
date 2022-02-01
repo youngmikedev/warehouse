@@ -300,7 +300,54 @@ func usersGet(t *testing.T) {
 				t.Errorf("UsersRepo.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			case err != nil && tt.errType != nil && !(err.Error() == tt.errType.Error()):
-				t.Errorf("UsersRepo.Update() error = %v, want = %v", err, tt.errType)
+				t.Errorf("UsersRepo.Get() error = %v, want = %v", err, tt.errType)
+				return
+			}
+			if got.ID != tt.want.ID ||
+				got.Email != tt.want.Email ||
+				got.Name != tt.want.Name {
+				t.Errorf("UsersRepo.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func usersGetByLogin(t *testing.T) {
+	tests := []struct {
+		name    string
+		login   string
+		want    domain.User
+		wantErr bool
+		errType error
+	}{
+		{
+			name:  "1.Valid",
+			login: "example_new@ecample.org",
+			want: domain.User{
+				ID:    1,
+				Name:  "Jerry",
+				Email: "example_new@ecample.org",
+			},
+		},
+		{
+			name:    "2.Invalid id",
+			login:   "a@a.a",
+			wantErr: true,
+			errType: domain.ErrUserNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &UsersRepo{
+				client: db,
+			}
+			got, err := r.GetByLogin(context.TODO(), tt.login)
+			switch {
+			case (err != nil) != tt.wantErr:
+				t.Errorf("UsersRepo.GetByLogin() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			case err != nil && tt.errType != nil && !(err.Error() == tt.errType.Error()):
+				t.Errorf("UsersRepo.GetByLogin() error = %v, want = %v", err, tt.errType)
 				return
 			}
 			if got.ID != tt.want.ID ||
@@ -490,10 +537,10 @@ func sessionGetByAccess(t *testing.T) {
 			got, err := r.GetSessionByAccess(context.TODO(), tt.token)
 			switch {
 			case (err != nil) != tt.wantErr:
-				t.Errorf("UsersRepo.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UsersRepo.GetByAccess() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			case err != nil && tt.errType != nil && !(err.Error() == tt.errType.Error()):
-				t.Errorf("UsersRepo.Update() error = %v, want = %v", err, tt.errType)
+				t.Errorf("UsersRepo.GetByAccess() error = %v, want = %v", err, tt.errType)
 				return
 			}
 			if got.ID != tt.want.ID ||
@@ -501,7 +548,7 @@ func sessionGetByAccess(t *testing.T) {
 				got.AccessToken != tt.want.AccessToken ||
 				got.RefreshToken != tt.want.RefreshToken ||
 				got.Disabled != tt.want.Disabled {
-				t.Errorf("UsersRepo.Get() = %v, want %v", got, tt.want)
+				t.Errorf("UsersRepo.GetByAccess() = %v, want %v", got, tt.want)
 			}
 		})
 	}
