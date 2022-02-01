@@ -11,25 +11,37 @@ const (
 	Label = "session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldAccessToken holds the string denoting the access_token field in the database.
+	FieldAccessToken = "access_token"
 	// FieldRefreshToken holds the string denoting the refresh_token field in the database.
 	FieldRefreshToken = "refresh_token"
-	// FieldExpiresAtMin holds the string denoting the expires_at_min field in the database.
-	FieldExpiresAtMin = "expires_at_min"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldDisabled holds the string denoting the disabled field in the database.
+	FieldDisabled = "disabled"
+	// EdgeOwner holds the string denoting the owner edge name in mutations.
+	EdgeOwner = "owner"
 	// Table holds the table name of the session in the database.
 	Table = "sessions"
+	// OwnerTable is the table that holds the owner relation/edge.
+	OwnerTable = "sessions"
+	// OwnerInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	OwnerInverseTable = "users"
+	// OwnerColumn is the table column denoting the owner relation/edge.
+	OwnerColumn = "user_sessions"
 )
 
 // Columns holds all SQL columns for session fields.
 var Columns = []string{
 	FieldID,
+	FieldAccessToken,
 	FieldRefreshToken,
-	FieldExpiresAtMin,
 	FieldUpdatedAt,
 	FieldCreatedAt,
+	FieldDisabled,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "sessions"
@@ -54,12 +66,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// AccessTokenValidator is a validator for the "access_token" field. It is called by the builders before save.
+	AccessTokenValidator func(string) error
 	// RefreshTokenValidator is a validator for the "refresh_token" field. It is called by the builders before save.
 	RefreshTokenValidator func(string) error
-	// ExpiresAtMinValidator is a validator for the "expires_at_min" field. It is called by the builders before save.
-	ExpiresAtMinValidator func(int) error
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultDisabled holds the default value on creation for the "disabled" field.
+	DefaultDisabled bool
 )

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // SessionCreate is the builder for creating a Session entity.
@@ -20,15 +21,15 @@ type SessionCreate struct {
 	hooks    []Hook
 }
 
-// SetRefreshToken sets the "refresh_token" field.
-func (sc *SessionCreate) SetRefreshToken(s string) *SessionCreate {
-	sc.mutation.SetRefreshToken(s)
+// SetAccessToken sets the "access_token" field.
+func (sc *SessionCreate) SetAccessToken(s string) *SessionCreate {
+	sc.mutation.SetAccessToken(s)
 	return sc
 }
 
-// SetExpiresAtMin sets the "expires_at_min" field.
-func (sc *SessionCreate) SetExpiresAtMin(i int) *SessionCreate {
-	sc.mutation.SetExpiresAtMin(i)
+// SetRefreshToken sets the "refresh_token" field.
+func (sc *SessionCreate) SetRefreshToken(s string) *SessionCreate {
+	sc.mutation.SetRefreshToken(s)
 	return sc
 }
 
@@ -58,6 +59,31 @@ func (sc *SessionCreate) SetNillableCreatedAt(t *time.Time) *SessionCreate {
 		sc.SetCreatedAt(*t)
 	}
 	return sc
+}
+
+// SetDisabled sets the "disabled" field.
+func (sc *SessionCreate) SetDisabled(b bool) *SessionCreate {
+	sc.mutation.SetDisabled(b)
+	return sc
+}
+
+// SetNillableDisabled sets the "disabled" field if the given value is not nil.
+func (sc *SessionCreate) SetNillableDisabled(b *bool) *SessionCreate {
+	if b != nil {
+		sc.SetDisabled(*b)
+	}
+	return sc
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by ID.
+func (sc *SessionCreate) SetOwnerID(id int) *SessionCreate {
+	sc.mutation.SetOwnerID(id)
+	return sc
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (sc *SessionCreate) SetOwner(u *User) *SessionCreate {
+	return sc.SetOwnerID(u.ID)
 }
 
 // Mutation returns the SessionMutation object of the builder.
@@ -139,10 +165,22 @@ func (sc *SessionCreate) defaults() {
 		v := session.DefaultCreatedAt()
 		sc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := sc.mutation.Disabled(); !ok {
+		v := session.DefaultDisabled
+		sc.mutation.SetDisabled(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *SessionCreate) check() error {
+	if _, ok := sc.mutation.AccessToken(); !ok {
+		return &ValidationError{Name: "access_token", err: errors.New(`ent: missing required field "Session.access_token"`)}
+	}
+	if v, ok := sc.mutation.AccessToken(); ok {
+		if err := session.AccessTokenValidator(v); err != nil {
+			return &ValidationError{Name: "access_token", err: fmt.Errorf(`ent: validator failed for field "Session.access_token": %w`, err)}
+		}
+	}
 	if _, ok := sc.mutation.RefreshToken(); !ok {
 		return &ValidationError{Name: "refresh_token", err: errors.New(`ent: missing required field "Session.refresh_token"`)}
 	}
@@ -151,19 +189,17 @@ func (sc *SessionCreate) check() error {
 			return &ValidationError{Name: "refresh_token", err: fmt.Errorf(`ent: validator failed for field "Session.refresh_token": %w`, err)}
 		}
 	}
-	if _, ok := sc.mutation.ExpiresAtMin(); !ok {
-		return &ValidationError{Name: "expires_at_min", err: errors.New(`ent: missing required field "Session.expires_at_min"`)}
-	}
-	if v, ok := sc.mutation.ExpiresAtMin(); ok {
-		if err := session.ExpiresAtMinValidator(v); err != nil {
-			return &ValidationError{Name: "expires_at_min", err: fmt.Errorf(`ent: validator failed for field "Session.expires_at_min": %w`, err)}
-		}
-	}
 	if _, ok := sc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Session.updated_at"`)}
 	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Session.created_at"`)}
+	}
+	if _, ok := sc.mutation.Disabled(); !ok {
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "Session.disabled"`)}
+	}
+	if _, ok := sc.mutation.OwnerID(); !ok {
+		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required edge "Session.owner"`)}
 	}
 	return nil
 }
@@ -192,6 +228,14 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := sc.mutation.AccessToken(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: session.FieldAccessToken,
+		})
+		_node.AccessToken = value
+	}
 	if value, ok := sc.mutation.RefreshToken(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -199,14 +243,6 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 			Column: session.FieldRefreshToken,
 		})
 		_node.RefreshToken = value
-	}
-	if value, ok := sc.mutation.ExpiresAtMin(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: session.FieldExpiresAtMin,
-		})
-		_node.ExpiresAtMin = value
 	}
 	if value, ok := sc.mutation.UpdatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -223,6 +259,34 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 			Column: session.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if value, ok := sc.mutation.Disabled(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: session.FieldDisabled,
+		})
+		_node.Disabled = value
+	}
+	if nodes := sc.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.OwnerTable,
+			Columns: []string{session.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_sessions = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

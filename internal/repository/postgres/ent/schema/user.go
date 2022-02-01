@@ -1,13 +1,13 @@
 package schema
 
 import (
+	"errors"
 	"net/mail"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/imranzahaev/warehouse/internal/domain"
 )
 
 // User holds the schema definition for the User entity.
@@ -25,7 +25,7 @@ func (User) Fields() []ent.Field {
 			Validate(func(s string) error {
 				_, err := mail.ParseAddress(s)
 				if err != nil {
-					return domain.ErrInvalidEmail
+					return errors.New("invalid email address")
 				}
 				return nil
 			}),

@@ -31,14 +31,14 @@ func init() {
 	product.DefaultCreatedAt = productDescCreatedAt.Default.(func() time.Time)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
+	// sessionDescAccessToken is the schema descriptor for access_token field.
+	sessionDescAccessToken := sessionFields[0].Descriptor()
+	// session.AccessTokenValidator is a validator for the "access_token" field. It is called by the builders before save.
+	session.AccessTokenValidator = sessionDescAccessToken.Validators[0].(func(string) error)
 	// sessionDescRefreshToken is the schema descriptor for refresh_token field.
-	sessionDescRefreshToken := sessionFields[0].Descriptor()
+	sessionDescRefreshToken := sessionFields[1].Descriptor()
 	// session.RefreshTokenValidator is a validator for the "refresh_token" field. It is called by the builders before save.
 	session.RefreshTokenValidator = sessionDescRefreshToken.Validators[0].(func(string) error)
-	// sessionDescExpiresAtMin is the schema descriptor for expires_at_min field.
-	sessionDescExpiresAtMin := sessionFields[1].Descriptor()
-	// session.ExpiresAtMinValidator is a validator for the "expires_at_min" field. It is called by the builders before save.
-	session.ExpiresAtMinValidator = sessionDescExpiresAtMin.Validators[0].(func(int) error)
 	// sessionDescUpdatedAt is the schema descriptor for updated_at field.
 	sessionDescUpdatedAt := sessionFields[2].Descriptor()
 	// session.DefaultUpdatedAt holds the default value on creation for the updated_at field.
@@ -47,6 +47,10 @@ func init() {
 	sessionDescCreatedAt := sessionFields[3].Descriptor()
 	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
 	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
+	// sessionDescDisabled is the schema descriptor for disabled field.
+	sessionDescDisabled := sessionFields[4].Descriptor()
+	// session.DefaultDisabled holds the default value on creation for the disabled field.
+	session.DefaultDisabled = sessionDescDisabled.Default.(bool)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // SessionUpdate is the builder for updating Session entities.
@@ -28,22 +29,15 @@ func (su *SessionUpdate) Where(ps ...predicate.Session) *SessionUpdate {
 	return su
 }
 
+// SetAccessToken sets the "access_token" field.
+func (su *SessionUpdate) SetAccessToken(s string) *SessionUpdate {
+	su.mutation.SetAccessToken(s)
+	return su
+}
+
 // SetRefreshToken sets the "refresh_token" field.
 func (su *SessionUpdate) SetRefreshToken(s string) *SessionUpdate {
 	su.mutation.SetRefreshToken(s)
-	return su
-}
-
-// SetExpiresAtMin sets the "expires_at_min" field.
-func (su *SessionUpdate) SetExpiresAtMin(i int) *SessionUpdate {
-	su.mutation.ResetExpiresAtMin()
-	su.mutation.SetExpiresAtMin(i)
-	return su
-}
-
-// AddExpiresAtMin adds i to the "expires_at_min" field.
-func (su *SessionUpdate) AddExpiresAtMin(i int) *SessionUpdate {
-	su.mutation.AddExpiresAtMin(i)
 	return su
 }
 
@@ -75,9 +69,40 @@ func (su *SessionUpdate) SetNillableCreatedAt(t *time.Time) *SessionUpdate {
 	return su
 }
 
+// SetDisabled sets the "disabled" field.
+func (su *SessionUpdate) SetDisabled(b bool) *SessionUpdate {
+	su.mutation.SetDisabled(b)
+	return su
+}
+
+// SetNillableDisabled sets the "disabled" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableDisabled(b *bool) *SessionUpdate {
+	if b != nil {
+		su.SetDisabled(*b)
+	}
+	return su
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by ID.
+func (su *SessionUpdate) SetOwnerID(id int) *SessionUpdate {
+	su.mutation.SetOwnerID(id)
+	return su
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (su *SessionUpdate) SetOwner(u *User) *SessionUpdate {
+	return su.SetOwnerID(u.ID)
+}
+
 // Mutation returns the SessionMutation object of the builder.
 func (su *SessionUpdate) Mutation() *SessionMutation {
 	return su.mutation
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (su *SessionUpdate) ClearOwner() *SessionUpdate {
+	su.mutation.ClearOwner()
+	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -142,15 +167,18 @@ func (su *SessionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (su *SessionUpdate) check() error {
+	if v, ok := su.mutation.AccessToken(); ok {
+		if err := session.AccessTokenValidator(v); err != nil {
+			return &ValidationError{Name: "access_token", err: fmt.Errorf(`ent: validator failed for field "Session.access_token": %w`, err)}
+		}
+	}
 	if v, ok := su.mutation.RefreshToken(); ok {
 		if err := session.RefreshTokenValidator(v); err != nil {
 			return &ValidationError{Name: "refresh_token", err: fmt.Errorf(`ent: validator failed for field "Session.refresh_token": %w`, err)}
 		}
 	}
-	if v, ok := su.mutation.ExpiresAtMin(); ok {
-		if err := session.ExpiresAtMinValidator(v); err != nil {
-			return &ValidationError{Name: "expires_at_min", err: fmt.Errorf(`ent: validator failed for field "Session.expires_at_min": %w`, err)}
-		}
+	if _, ok := su.mutation.OwnerID(); su.mutation.OwnerCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Session.owner"`)
 	}
 	return nil
 }
@@ -173,25 +201,18 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := su.mutation.AccessToken(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: session.FieldAccessToken,
+		})
+	}
 	if value, ok := su.mutation.RefreshToken(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: session.FieldRefreshToken,
-		})
-	}
-	if value, ok := su.mutation.ExpiresAtMin(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: session.FieldExpiresAtMin,
-		})
-	}
-	if value, ok := su.mutation.AddedExpiresAtMin(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: session.FieldExpiresAtMin,
 		})
 	}
 	if value, ok := su.mutation.UpdatedAt(); ok {
@@ -207,6 +228,48 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Value:  value,
 			Column: session.FieldCreatedAt,
 		})
+	}
+	if value, ok := su.mutation.Disabled(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: session.FieldDisabled,
+		})
+	}
+	if su.mutation.OwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.OwnerTable,
+			Columns: []string{session.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.OwnerTable,
+			Columns: []string{session.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -227,22 +290,15 @@ type SessionUpdateOne struct {
 	mutation *SessionMutation
 }
 
+// SetAccessToken sets the "access_token" field.
+func (suo *SessionUpdateOne) SetAccessToken(s string) *SessionUpdateOne {
+	suo.mutation.SetAccessToken(s)
+	return suo
+}
+
 // SetRefreshToken sets the "refresh_token" field.
 func (suo *SessionUpdateOne) SetRefreshToken(s string) *SessionUpdateOne {
 	suo.mutation.SetRefreshToken(s)
-	return suo
-}
-
-// SetExpiresAtMin sets the "expires_at_min" field.
-func (suo *SessionUpdateOne) SetExpiresAtMin(i int) *SessionUpdateOne {
-	suo.mutation.ResetExpiresAtMin()
-	suo.mutation.SetExpiresAtMin(i)
-	return suo
-}
-
-// AddExpiresAtMin adds i to the "expires_at_min" field.
-func (suo *SessionUpdateOne) AddExpiresAtMin(i int) *SessionUpdateOne {
-	suo.mutation.AddExpiresAtMin(i)
 	return suo
 }
 
@@ -274,9 +330,40 @@ func (suo *SessionUpdateOne) SetNillableCreatedAt(t *time.Time) *SessionUpdateOn
 	return suo
 }
 
+// SetDisabled sets the "disabled" field.
+func (suo *SessionUpdateOne) SetDisabled(b bool) *SessionUpdateOne {
+	suo.mutation.SetDisabled(b)
+	return suo
+}
+
+// SetNillableDisabled sets the "disabled" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableDisabled(b *bool) *SessionUpdateOne {
+	if b != nil {
+		suo.SetDisabled(*b)
+	}
+	return suo
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by ID.
+func (suo *SessionUpdateOne) SetOwnerID(id int) *SessionUpdateOne {
+	suo.mutation.SetOwnerID(id)
+	return suo
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (suo *SessionUpdateOne) SetOwner(u *User) *SessionUpdateOne {
+	return suo.SetOwnerID(u.ID)
+}
+
 // Mutation returns the SessionMutation object of the builder.
 func (suo *SessionUpdateOne) Mutation() *SessionMutation {
 	return suo.mutation
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (suo *SessionUpdateOne) ClearOwner() *SessionUpdateOne {
+	suo.mutation.ClearOwner()
+	return suo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -348,15 +435,18 @@ func (suo *SessionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (suo *SessionUpdateOne) check() error {
+	if v, ok := suo.mutation.AccessToken(); ok {
+		if err := session.AccessTokenValidator(v); err != nil {
+			return &ValidationError{Name: "access_token", err: fmt.Errorf(`ent: validator failed for field "Session.access_token": %w`, err)}
+		}
+	}
 	if v, ok := suo.mutation.RefreshToken(); ok {
 		if err := session.RefreshTokenValidator(v); err != nil {
 			return &ValidationError{Name: "refresh_token", err: fmt.Errorf(`ent: validator failed for field "Session.refresh_token": %w`, err)}
 		}
 	}
-	if v, ok := suo.mutation.ExpiresAtMin(); ok {
-		if err := session.ExpiresAtMinValidator(v); err != nil {
-			return &ValidationError{Name: "expires_at_min", err: fmt.Errorf(`ent: validator failed for field "Session.expires_at_min": %w`, err)}
-		}
+	if _, ok := suo.mutation.OwnerID(); suo.mutation.OwnerCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Session.owner"`)
 	}
 	return nil
 }
@@ -396,25 +486,18 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 			}
 		}
 	}
+	if value, ok := suo.mutation.AccessToken(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: session.FieldAccessToken,
+		})
+	}
 	if value, ok := suo.mutation.RefreshToken(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: session.FieldRefreshToken,
-		})
-	}
-	if value, ok := suo.mutation.ExpiresAtMin(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: session.FieldExpiresAtMin,
-		})
-	}
-	if value, ok := suo.mutation.AddedExpiresAtMin(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: session.FieldExpiresAtMin,
 		})
 	}
 	if value, ok := suo.mutation.UpdatedAt(); ok {
@@ -430,6 +513,48 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 			Value:  value,
 			Column: session.FieldCreatedAt,
 		})
+	}
+	if value, ok := suo.mutation.Disabled(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: session.FieldDisabled,
+		})
+	}
+	if suo.mutation.OwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.OwnerTable,
+			Columns: []string{session.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.OwnerTable,
+			Columns: []string{session.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Session{config: suo.config}
 	_spec.Assign = _node.assignValues

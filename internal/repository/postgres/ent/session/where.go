@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
 )
 
@@ -92,17 +93,17 @@ func IDLTE(id int) predicate.Session {
 	})
 }
 
+// AccessToken applies equality check predicate on the "access_token" field. It's identical to AccessTokenEQ.
+func AccessToken(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAccessToken), v))
+	})
+}
+
 // RefreshToken applies equality check predicate on the "refresh_token" field. It's identical to RefreshTokenEQ.
 func RefreshToken(v string) predicate.Session {
 	return predicate.Session(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRefreshToken), v))
-	})
-}
-
-// ExpiresAtMin applies equality check predicate on the "expires_at_min" field. It's identical to ExpiresAtMinEQ.
-func ExpiresAtMin(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldExpiresAtMin), v))
 	})
 }
 
@@ -117,6 +118,124 @@ func UpdatedAt(v time.Time) predicate.Session {
 func CreatedAt(v time.Time) predicate.Session {
 	return predicate.Session(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
+	})
+}
+
+// Disabled applies equality check predicate on the "disabled" field. It's identical to DisabledEQ.
+func Disabled(v bool) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDisabled), v))
+	})
+}
+
+// AccessTokenEQ applies the EQ predicate on the "access_token" field.
+func AccessTokenEQ(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenNEQ applies the NEQ predicate on the "access_token" field.
+func AccessTokenNEQ(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenIn applies the In predicate on the "access_token" field.
+func AccessTokenIn(vs ...string) predicate.Session {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Session(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAccessToken), v...))
+	})
+}
+
+// AccessTokenNotIn applies the NotIn predicate on the "access_token" field.
+func AccessTokenNotIn(vs ...string) predicate.Session {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Session(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAccessToken), v...))
+	})
+}
+
+// AccessTokenGT applies the GT predicate on the "access_token" field.
+func AccessTokenGT(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenGTE applies the GTE predicate on the "access_token" field.
+func AccessTokenGTE(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenLT applies the LT predicate on the "access_token" field.
+func AccessTokenLT(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenLTE applies the LTE predicate on the "access_token" field.
+func AccessTokenLTE(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenContains applies the Contains predicate on the "access_token" field.
+func AccessTokenContains(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenHasPrefix applies the HasPrefix predicate on the "access_token" field.
+func AccessTokenHasPrefix(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenHasSuffix applies the HasSuffix predicate on the "access_token" field.
+func AccessTokenHasSuffix(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenEqualFold applies the EqualFold predicate on the "access_token" field.
+func AccessTokenEqualFold(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldAccessToken), v))
+	})
+}
+
+// AccessTokenContainsFold applies the ContainsFold predicate on the "access_token" field.
+func AccessTokenContainsFold(v string) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldAccessToken), v))
 	})
 }
 
@@ -228,82 +347,6 @@ func RefreshTokenEqualFold(v string) predicate.Session {
 func RefreshTokenContainsFold(v string) predicate.Session {
 	return predicate.Session(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldRefreshToken), v))
-	})
-}
-
-// ExpiresAtMinEQ applies the EQ predicate on the "expires_at_min" field.
-func ExpiresAtMinEQ(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldExpiresAtMin), v))
-	})
-}
-
-// ExpiresAtMinNEQ applies the NEQ predicate on the "expires_at_min" field.
-func ExpiresAtMinNEQ(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldExpiresAtMin), v))
-	})
-}
-
-// ExpiresAtMinIn applies the In predicate on the "expires_at_min" field.
-func ExpiresAtMinIn(vs ...int) predicate.Session {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Session(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldExpiresAtMin), v...))
-	})
-}
-
-// ExpiresAtMinNotIn applies the NotIn predicate on the "expires_at_min" field.
-func ExpiresAtMinNotIn(vs ...int) predicate.Session {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Session(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldExpiresAtMin), v...))
-	})
-}
-
-// ExpiresAtMinGT applies the GT predicate on the "expires_at_min" field.
-func ExpiresAtMinGT(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldExpiresAtMin), v))
-	})
-}
-
-// ExpiresAtMinGTE applies the GTE predicate on the "expires_at_min" field.
-func ExpiresAtMinGTE(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldExpiresAtMin), v))
-	})
-}
-
-// ExpiresAtMinLT applies the LT predicate on the "expires_at_min" field.
-func ExpiresAtMinLT(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldExpiresAtMin), v))
-	})
-}
-
-// ExpiresAtMinLTE applies the LTE predicate on the "expires_at_min" field.
-func ExpiresAtMinLTE(v int) predicate.Session {
-	return predicate.Session(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldExpiresAtMin), v))
 	})
 }
 
@@ -456,6 +499,48 @@ func CreatedAtLT(v time.Time) predicate.Session {
 func CreatedAtLTE(v time.Time) predicate.Session {
 	return predicate.Session(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
+	})
+}
+
+// DisabledEQ applies the EQ predicate on the "disabled" field.
+func DisabledEQ(v bool) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDisabled), v))
+	})
+}
+
+// DisabledNEQ applies the NEQ predicate on the "disabled" field.
+func DisabledNEQ(v bool) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDisabled), v))
+	})
+}
+
+// HasOwner applies the HasEdge predicate on the "owner" edge.
+func HasOwner() predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OwnerTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOwnerWith applies the HasEdge predicate on the "owner" edge with a given conditions (other predicates).
+func HasOwnerWith(preds ...predicate.User) predicate.Session {
+	return predicate.Session(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OwnerInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 
