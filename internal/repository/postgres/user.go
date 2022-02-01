@@ -81,31 +81,31 @@ func (r *UsersRepo) Update(ctx context.Context, user domain.User, password strin
 	return nil
 }
 
-func (r *UsersRepo) Get(ctx context.Context, id int) (domain.User, error) {
+func (r *UsersRepo) Get(ctx context.Context, id int) (user domain.User, password string, err error) {
 	u, err := r.client.User.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return domain.User{}, domain.ErrUserNotFound
+			return domain.User{}, "", domain.ErrUserNotFound
 		}
-		return domain.User{}, err
+		return domain.User{}, "", err
 	}
 
-	return convertUserToDomain(u), nil
+	return convertUserToDomain(u), u.Password, nil
 }
 
 // GetByLogin expects the login will be email
-func (r *UsersRepo) GetByLogin(ctx context.Context, login string) (domain.User, error) {
+func (r *UsersRepo) GetByLogin(ctx context.Context, login string) (user domain.User, password string, err error) {
 	u, err := r.client.User.Query().
 		Where(entuser.Email(login)).
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return domain.User{}, domain.ErrUserNotFound
+			return domain.User{}, "", domain.ErrUserNotFound
 		}
-		return domain.User{}, err
+		return domain.User{}, "", err
 	}
 
-	return convertUserToDomain(u), nil
+	return convertUserToDomain(u), u.Password, nil
 }
 
 func (r *UsersRepo) CreateSession(ctx context.Context, session domain.Session) (int, error) {

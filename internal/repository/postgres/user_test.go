@@ -270,6 +270,7 @@ func usersGet(t *testing.T) {
 		name    string
 		userID  int
 		want    domain.User
+		wantPwd string
 		wantErr bool
 		errType error
 	}{
@@ -281,6 +282,7 @@ func usersGet(t *testing.T) {
 				Name:  "Jerry",
 				Email: "example_new@ecample.org",
 			},
+			wantPwd: "strongpass_new",
 		},
 		{
 			name:    "2.Invalid id",
@@ -294,7 +296,7 @@ func usersGet(t *testing.T) {
 			r := &UsersRepo{
 				client: db,
 			}
-			got, err := r.Get(context.TODO(), tt.userID)
+			got, gotPwd, err := r.Get(context.TODO(), tt.userID)
 			switch {
 			case (err != nil) != tt.wantErr:
 				t.Errorf("UsersRepo.Get() error = %v, wantErr %v", err, tt.wantErr)
@@ -305,8 +307,9 @@ func usersGet(t *testing.T) {
 			}
 			if got.ID != tt.want.ID ||
 				got.Email != tt.want.Email ||
-				got.Name != tt.want.Name {
-				t.Errorf("UsersRepo.Get() = %v, want %v", got, tt.want)
+				got.Name != tt.want.Name ||
+				gotPwd != tt.wantPwd {
+				t.Errorf("UsersRepo.Get() (usr = %v, pwd = %v), want (usr = %v, pwd = %v)", got, gotPwd, tt.want, tt.wantPwd)
 			}
 		})
 	}
@@ -317,6 +320,7 @@ func usersGetByLogin(t *testing.T) {
 		name    string
 		login   string
 		want    domain.User
+		wantPwd string
 		wantErr bool
 		errType error
 	}{
@@ -328,6 +332,7 @@ func usersGetByLogin(t *testing.T) {
 				Name:  "Jerry",
 				Email: "example_new@ecample.org",
 			},
+			wantPwd: "strongpass_new",
 		},
 		{
 			name:    "2.Invalid id",
@@ -341,7 +346,7 @@ func usersGetByLogin(t *testing.T) {
 			r := &UsersRepo{
 				client: db,
 			}
-			got, err := r.GetByLogin(context.TODO(), tt.login)
+			got, gotPwd, err := r.GetByLogin(context.TODO(), tt.login)
 			switch {
 			case (err != nil) != tt.wantErr:
 				t.Errorf("UsersRepo.GetByLogin() error = %v, wantErr %v", err, tt.wantErr)
@@ -352,8 +357,9 @@ func usersGetByLogin(t *testing.T) {
 			}
 			if got.ID != tt.want.ID ||
 				got.Email != tt.want.Email ||
-				got.Name != tt.want.Name {
-				t.Errorf("UsersRepo.Get() = %v, want %v", got, tt.want)
+				got.Name != tt.want.Name ||
+				gotPwd != tt.wantPwd {
+				t.Errorf("UsersRepo.GetByLogin() (usr = %v, pwd = %v), want (usr = %v, pwd = %v)", got, gotPwd, tt.want, tt.wantPwd)
 			}
 		})
 	}
