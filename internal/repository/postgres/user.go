@@ -35,10 +35,7 @@ func (r *UsersRepo) Create(ctx context.Context, user domain.User, password strin
 
 		case ent.IsValidationError(err):
 			e := err.(*ent.ValidationError)
-			return 0, domain.ValidationError{
-				Field: e.Name,
-				Err:   errors.Unwrap(e.Unwrap()),
-			}
+			return 0, domain.NewValidationError(e.Name, errors.Unwrap(e.Unwrap()))
 		}
 
 		return 0, err
@@ -50,7 +47,7 @@ func (r *UsersRepo) Create(ctx context.Context, user domain.User, password strin
 // Update user by id
 func (r *UsersRepo) Update(ctx context.Context, user domain.User, password string) error {
 	if user.ID == 0 {
-		return errors.New("empty user id")
+		return domain.AppError{Err: errors.New("empty user id")}
 	}
 
 	u := r.client.User.UpdateOneID(user.ID)
@@ -72,10 +69,7 @@ func (r *UsersRepo) Update(ctx context.Context, user domain.User, password strin
 
 		case ent.IsValidationError(err):
 			e := err.(*ent.ValidationError)
-			return domain.ValidationError{
-				Field: e.Name,
-				Err:   errors.Unwrap(e.Unwrap()),
-			}
+			return domain.NewValidationError(e.Name, errors.Unwrap(e.Unwrap()))
 		case ent.IsNotFound(err):
 			return domain.ErrUserNotFound
 		}
@@ -109,10 +103,7 @@ func (r *UsersRepo) CreateSession(ctx context.Context, session domain.Session) (
 		switch {
 		case ent.IsValidationError(err):
 			e := err.(*ent.ValidationError)
-			return 0, domain.ValidationError{
-				Field: e.Name,
-				Err:   errors.Unwrap(e.Unwrap()),
-			}
+			return 0, domain.NewValidationError(e.Name, errors.Unwrap(e.Unwrap()))
 		case ent.IsConstraintError(err) && strings.Contains(err.Error(), "violates foreign key constraint"):
 			return 0, domain.ErrUserNotFound
 		}
@@ -123,7 +114,7 @@ func (r *UsersRepo) CreateSession(ctx context.Context, session domain.Session) (
 
 func (r *UsersRepo) UpdateSession(ctx context.Context, session domain.Session) error {
 	if session.ID == 0 {
-		return errors.New("empty session id")
+		return domain.AppError{Err: errors.New("empty session id")}
 	}
 
 	u := r.client.Session.UpdateOneID(session.ID)
@@ -140,10 +131,7 @@ func (r *UsersRepo) UpdateSession(ctx context.Context, session domain.Session) e
 		switch {
 		case ent.IsValidationError(err):
 			e := err.(*ent.ValidationError)
-			return domain.ValidationError{
-				Field: e.Name,
-				Err:   errors.Unwrap(e.Unwrap()),
-			}
+			return domain.NewValidationError(e.Name, errors.Unwrap(e.Unwrap()))
 		case ent.IsNotFound(err):
 			return domain.ErrSessionNotFound
 		}

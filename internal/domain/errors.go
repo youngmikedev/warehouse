@@ -14,13 +14,35 @@ func (e ValidationError) Error() string {
 	return fmt.Sprintf("validation error field: %s, error: %s", e.Field, e.Err)
 }
 
+func NewValidationError(field string, err error) error {
+	return AppError{
+		ValidationError{
+			Field: field,
+			Err:   err,
+		},
+	}
+}
+
+type AppError struct {
+	Err error
+}
+
+func (e AppError) Error() string {
+	return e.Err.Error()
+}
+
+// func newError(e error) error {
+
+// }
+
 var (
-	ErrUserNotFound            = errors.New("user doesn't exists")
-	ErrSessionNotFound         = errors.New("user doesn't exists")
-	ErrUserAlreadyExists       = errors.New("user with such email already exists")
-	ErrInvalidEmail      error = &ValidationError{
+	ErrUserNotFound      error = AppError{errors.New("user doesn't exists")}
+	ErrSessionNotFound   error = AppError{errors.New("user doesn't exists")}
+	ErrUserAlreadyExists error = AppError{errors.New("user with such email already exists")}
+	ErrInvalidEmail      error = AppError{&ValidationError{
 		Field: "email",
 		Err:   errors.New("invalid email address"),
-	}
-	ErrValidation = errors.New("validation error")
+	}}
+	ErrValidation error = AppError{errors.New("validation error")}
+	ErrInternal   error = AppError{errors.New("internal error")}
 )
