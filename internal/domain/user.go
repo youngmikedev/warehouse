@@ -12,8 +12,10 @@ type User struct {
 type Session struct {
 	ID           int
 	UserID       int
+	AccessToken  string
 	RefreshToken string
 	ExpiresAt    time.Duration
 	UpdatedAt    time.Time
 	CreatedAt    time.Time
+	Disabled     bool
 }
