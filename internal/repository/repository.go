@@ -6,6 +6,10 @@ import (
 	"github.com/imranzahaev/warehouse/internal/domain"
 )
 
+type Repositories struct {
+	User
+}
+
 type User interface {
 	Create(ctx context.Context, user domain.User, pwd string) error
 	Update(ctx context.Context, user domain.User, pwd string) error
