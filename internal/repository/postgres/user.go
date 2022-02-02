@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/imranzahaev/warehouse/internal/domain"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
@@ -140,6 +141,7 @@ func (r *UsersRepo) UpdateSession(ctx context.Context, session domain.Session) e
 	if session.RefreshToken != "" {
 		u = u.SetRefreshToken(session.RefreshToken)
 	}
+	u = u.SetUpdatedAt(time.Now())
 	u = u.SetDisabled(session.Disabled)
 
 	_, err := u.Save(ctx)
