@@ -1,71 +1,154 @@
 package service
 
+import (
+	"context"
+	"errors"
+
+	"github.com/imranzahaev/warehouse/internal/auth"
+	"github.com/imranzahaev/warehouse/internal/domain"
+	"github.com/imranzahaev/warehouse/internal/repository"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+)
+
 type UserService struct {
-	// tokenManager auth.TokenManager
-	// hasher       auth.HashManager
-	// repo         *repository.Repositories
+	tokenManager auth.TokenManager
+	hashManager  auth.HashManager
+	repo         *repository.Repositories
+	log          *zerolog.Logger
 }
 
-// func NewUserService(repo *repository.Repositories, tokenManager auth.TokenManager, hasher auth.HashManager) *UserService {
-// 	return &UserService{
-// 		tokenManager: tokenManager,
-// 		hasher:       hasher,
-// 		repo:         repo,
-// 	}
-// }
+func NewUserService(repo *repository.Repositories, tokenManager auth.TokenManager, hashManager auth.HashManager, logger *zerolog.Logger) *UserService {
+	sublogger := log.With().
+		Str("service", "user").
+		Logger()
+	return &UserService{
+		tokenManager: tokenManager,
+		hashManager:  hashManager,
+		repo:         repo,
+		log:          &sublogger,
+	}
+}
 
-// func (s *UserService) SignUp(ctx context.Context, user *domain.User) (token, refreshToken string, err error) {
-// 	if err = s.repo.User.CheckUserExist(ctx, user.Email); err != nil {
-// 		if err == errors.ErrUserAlreadyExists {
-// 			log.Error().
-// 				Err(err).
-// 				Str("email", user.Email).
-// 				Send()
-// 			return "", "", errors.ErrUserAlreadyExists
-// 		}
-// 		log.Error().
-// 			Err(err).
-// 			Msg("failed check user exist")
-// 		return "", "", errors.ErrInternal
-// 	}
+func (s *UserService) SignUp(ctx context.Context, user domain.User, password string) error {
+	pwd, err := s.hashManager.Hash(password)
+	if err != nil {
+		s.log.Error().
+			Err(err).
+			Str("func", "SignUp.Hash").
+			Msg("failed hash password")
+		return domain.ErrInternal
+	}
+	_, err = s.repo.User.Create(ctx, user, pwd)
+	if err != nil {
+		return checkAppError(s.log, err, "SignUp.Create")
+	}
 
-// 	user.CreatedAt = time.Now()
-// 	user.Password, err = s.hasher.Hash(user.Password)
-// 	if err != nil {
-// 		log.Error().
-// 			Err(err).
-// 			Msg("failed hash password")
-// 		return "", "", errors.ErrInternal
-// 	}
+	return nil
+}
 
-// 	if err = s.repo.User.Create(ctx, user); err != nil {
-// 		log.Error().
-// 			Err(err).
-// 			Msg("failed create user")
-// 		return "", "", errors.ErrInternal
-// 	}
+type SignInResponse struct {
+	User         domain.User
+	AccessToken  string
+	RefreshToken string
+}
 
-// 	rt := s.tokenManager.NewRefreshToken()
-// 	t, err := s.tokenManager.NewAccessToken(user.ID.String(), s.tokenManager.GetDefaultTokenExpiresAt())
-// 	if err != nil {
-// 		log.Error().
-// 			Err(err).
-// 			Msg("failed create access token")
-// 		return "", "", errors.ErrInternal
-// 	}
+func (s *UserService) SignIn(ctx context.Context, login, password string) (SignInResponse, error) {
+	u, hpwd, err := s.repo.User.GetByLogin(ctx, login)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			log.Info().
+				Str("login", login).
+				Msg("failed login")
+			return SignInResponse{}, domain.ErrInvalidLoginOrPassword
+		}
+		return SignInResponse{}, checkAppError(s.log, err, "SignIn.GetByLogin")
+	}
 
-// 	if err = s.repo.User.SetSession(ctx, &domain.Session{
-// 		UserID:       user.ID,
-// 		RefreshToken: rt,
-// 		ExpiresAt:    s.tokenManager.GetDefaultRefreshTokenExpiresAt(),
-// 		UpdatedAt:    time.Now(),
-// 		CreatedAt:    time.Now(),
-// 	}); err != nil {
-// 		log.Error().
-// 			Err(err).
-// 			Msg("failed set session")
-// 		return "", "", errors.ErrInternal
-// 	}
+	if !s.hashManager.Validate(hpwd, password) {
+		log.Info().
+			Str("login", login).
+			Msg("failed login")
+		return SignInResponse{}, domain.ErrInvalidLoginOrPassword
+	}
 
-// 	return t, rt, nil
-// }
+	at := s.tokenManager.NewAccessToken()
+	rt := s.tokenManager.NewRefreshToken()
+
+	_, err = s.repo.User.CreateSession(ctx, domain.Session{
+		UserID:       u.ID,
+		AccessToken:  at,
+		RefreshToken: rt,
+	})
+	if err != nil {
+		return SignInResponse{}, checkAppError(s.log, err, "SignIn.CreateSession")
+	}
+
+	return SignInResponse{AccessToken: at, RefreshToken: rt, User: u}, nil
+}
+
+func (s *UserService) Get(ctx context.Context, userID int) (domain.User, error) {
+	u, _, err := s.repo.User.Get(ctx, userID)
+	if err != nil {
+		return domain.User{}, checkAppError(s.log, err, "Get.Get")
+	}
+
+	return u, nil
+}
+
+func (s *UserService) Update(ctx context.Context, user domain.User, password string) (err error) {
+	if password != "" {
+		password, err = s.hashManager.Hash(password)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("func", "Update.Hash").
+				Msg("failed hash password")
+			return domain.ErrInternal
+		}
+	}
+
+	if err = s.repo.Update(ctx, user, password); err != nil {
+		return checkAppError(s.log, err, "Update.Update")
+	}
+
+	return nil
+}
+
+func (s *UserService) RefreshTokens(ctx context.Context, oldRefreshToken string) (accessToken, refreshToken string, err error) {
+	ses, err := s.repo.GetSessionByRefresh(ctx, oldRefreshToken)
+	if err != nil {
+		return "", "", checkAppError(s.log, err, "RefreshTokens.GetSessionByRefresh")
+	}
+
+	if s.tokenManager.ValidateRefreshToken(ses.UpdatedAt) {
+		ses.Disabled = true
+		if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
+			return "", "", checkAppError(s.log, err, "RefreshTokens.DisableSession")
+		}
+		return "", "", domain.ErrTokenExpired
+	}
+
+	ses.AccessToken = s.tokenManager.NewAccessToken()
+	ses.RefreshToken = s.tokenManager.NewRefreshToken()
+
+	if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
+		return "", "", checkAppError(s.log, err, "RefreshTokens.UpdateSession")
+	}
+
+	return ses.AccessToken, ses.RefreshToken, nil
+}
+
+func (s *UserService) LogOut(ctx context.Context, accessToken string) error {
+	ses, err := s.repo.GetSessionByAccess(ctx, accessToken)
+	if err != nil {
+		return checkAppError(s.log, err, "LogOut.GetSessionByRefresh")
+	}
+
+	ses.Disabled = true
+	if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
+		return checkAppError(s.log, err, "LogOut.DisableSession")
+	}
+
+	return nil
+}
