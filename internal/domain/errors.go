@@ -43,6 +43,8 @@ var (
 		Field: "email",
 		Err:   errors.New("invalid email address"),
 	}}
-	ErrValidation error = AppError{errors.New("validation error")}
-	ErrInternal   error = AppError{errors.New("internal error")}
+	ErrValidation             error = AppError{errors.New("validation error")}
+	ErrInternal               error = AppError{errors.New("internal error")}
+	ErrInvalidLoginOrPassword error = AppError{errors.New("invalid login or password")}
+	ErrTokenExpired           error = AppError{errors.New("token expired")}
 )
