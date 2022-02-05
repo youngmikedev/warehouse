@@ -115,6 +115,23 @@ func (s *UserService) Update(ctx context.Context, user domain.User, password str
 	return nil
 }
 
+func (s *UserService) CheckAccessToken(ctx context.Context, token string) (sesID, userID int, err error) {
+	ses, err := s.repo.GetSessionByAccess(ctx, token)
+	if err != nil {
+		return 0, 0, checkAppError(s.log, err, "CheckAccessToken.GetSessionByAccess")
+	}
+
+	if s.tokenManager.ValidateAccessToken(ses.UpdatedAt) {
+		ses.Disabled = true
+		if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
+			return 0, 0, checkAppError(s.log, err, "CheckAccessToken.DisableSession")
+		}
+		return 0, 0, domain.ErrTokenExpired
+	}
+
+	return ses.ID, ses.UserID, err
+}
+
 func (s *UserService) RefreshTokens(ctx context.Context, oldRefreshToken string) (accessToken, refreshToken string, err error) {
 	ses, err := s.repo.GetSessionByRefresh(ctx, oldRefreshToken)
 	if err != nil {

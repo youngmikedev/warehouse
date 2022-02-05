@@ -17,6 +17,7 @@ type User interface {
 	SignIn(ctx context.Context, login, password string) (SignInResponse, error)
 	Get(ctx context.Context, userID int) (domain.User, error)
 	Update(ctx context.Context, user domain.User, password string) (err error)
+	CheckAccessToken(ctx context.Context, token string) (sesID, userID int, err error)
 	RefreshTokens(ctx context.Context, oldRefreshToken string) (accessToken, refreshToken string, err error)
 	LogOut(ctx context.Context, accessToken string) error
 }
