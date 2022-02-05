@@ -8,6 +8,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type Services struct {
+	User
+}
+
 type User interface {
 	SignUp(ctx context.Context, user domain.User, password string) error
 	SignIn(ctx context.Context, login, password string) (SignInResponse, error)
