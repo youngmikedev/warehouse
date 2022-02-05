@@ -9,11 +9,12 @@ import (
 )
 
 type User interface {
-	SignUp(ctx context.Context, user domain.User, pwd string) (token, refreshToken string, err error)
-	SignIn(ctx context.Context, login, password string) (user domain.User, token, refreshToken string, err error)
+	SignUp(ctx context.Context, user domain.User, password string) error
+	SignIn(ctx context.Context, login, password string) (SignInResponse, error)
 	Get(ctx context.Context, userID int) (domain.User, error)
-	Update(ctx context.Context, user domain.User) error
-	RefreshTokens(ctx context.Context, userID int, oldToken string) (token, refreshToken string, err error)
+	Update(ctx context.Context, user domain.User, password string) (err error)
+	RefreshTokens(ctx context.Context, oldRefreshToken string) (accessToken, refreshToken string, err error)
+	LogOut(ctx context.Context, accessToken string) error
 }
 
 func checkAppError(l *zerolog.Logger, err error, fname string) error {
