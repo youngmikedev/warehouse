@@ -3,7 +3,7 @@ package postgres
 import (
 	"fmt"
 
-	"entgo.io/ent/examples/fs/ent"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
 
 	_ "github.com/lib/pq"
 )
