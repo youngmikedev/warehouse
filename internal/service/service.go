@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/imranzahaev/warehouse/internal/auth"
 	"github.com/imranzahaev/warehouse/internal/domain"
+	"github.com/imranzahaev/warehouse/internal/repository"
 	"github.com/rs/zerolog"
 )
 
@@ -20,6 +22,17 @@ type User interface {
 	CheckAccessToken(ctx context.Context, token string) (sesID, userID int, err error)
 	RefreshTokens(ctx context.Context, oldRefreshToken string) (accessToken, refreshToken string, err error)
 	LogOut(ctx context.Context, accessToken string) error
+}
+
+func NewServices(
+	repos *repository.Repositories,
+	tokenManager auth.TokenManager,
+	hasher auth.HashManager,
+	logger *zerolog.Logger,
+) *Services {
+	return &Services{
+		User: NewUserService(repos, tokenManager, hasher, logger),
+	}
 }
 
 func checkAppError(l *zerolog.Logger, err error, fname string) error {
