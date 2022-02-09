@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/imranzahaev/warehouse/internal/domain"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
 )
 
 type Repositories struct {
@@ -19,4 +21,10 @@ type User interface {
 	UpdateSession(ctx context.Context, session domain.Session) error
 	GetSessionByAccess(ctx context.Context, token string) (domain.Session, error)
 	GetSessionByRefresh(ctx context.Context, token string) (domain.Session, error)
+}
+
+func NewPostgresRepositories(client *ent.Client) *Repositories {
+	return &Repositories{
+		User: postgres.NewUsersRepo(client),
+	}
 }
