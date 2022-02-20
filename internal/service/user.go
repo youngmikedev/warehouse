@@ -57,7 +57,7 @@ func (s *UserService) SignIn(ctx context.Context, login, password string) (SignI
 	u, hpwd, err := s.repo.User.GetByLogin(ctx, login)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
-			log.Info().
+			s.log.Info().
 				Str("login", login).
 				Msg("failed login")
 			return SignInResponse{}, domain.ErrInvalidLoginOrPassword
@@ -66,7 +66,7 @@ func (s *UserService) SignIn(ctx context.Context, login, password string) (SignI
 	}
 
 	if !s.hashManager.Validate(hpwd, password) {
-		log.Info().
+		s.log.Info().
 			Str("login", login).
 			Msg("failed login")
 		return SignInResponse{}, domain.ErrInvalidLoginOrPassword
@@ -100,7 +100,7 @@ func (s *UserService) Update(ctx context.Context, user domain.User, password str
 	if password != "" {
 		password, err = s.hashManager.Hash(password)
 		if err != nil {
-			log.Error().
+			s.log.Error().
 				Err(err).
 				Str("func", "Update.Hash").
 				Msg("failed hash password")
