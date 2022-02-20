@@ -162,7 +162,7 @@ func (r *UsersRepo) UpdateSession(ctx context.Context, session domain.Session) e
 func (r *UsersRepo) GetSessionByAccess(ctx context.Context, token string) (domain.Session, error) {
 	s, err := r.client.Session.
 		Query().
-		Where(session.AccessToken(token)).
+		Where(session.AccessToken(token), session.Disabled(false)).
 		Only(ctx)
 
 	if err != nil {
@@ -183,7 +183,7 @@ func (r *UsersRepo) GetSessionByAccess(ctx context.Context, token string) (domai
 func (r *UsersRepo) GetSessionByRefresh(ctx context.Context, token string) (domain.Session, error) {
 	s, err := r.client.Session.
 		Query().
-		Where(session.RefreshToken(token)).
+		Where(session.RefreshToken(token), session.Disabled(false)).
 		Only(ctx)
 
 	if err != nil {
