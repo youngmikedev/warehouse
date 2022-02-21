@@ -1,0 +1,257 @@
+basePath: /api/v1/
+definitions:
+  user.user:
+    properties:
+      created_at:
+        type: string
+        format: date
+      email:
+        type: string
+        format: email
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  user.refreshTokenRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  user.signInRequest:
+    properties:
+      email:
+        example: tom@test.com
+        type: string
+        format: email
+      password:
+        example: "123456789"
+        type: string
+        format: password
+    required:
+    - email
+    - password
+    type: object
+  user.signUpRequest:
+    properties:
+      email:
+        example: tom@test.com
+        type: string
+        format: email
+      name:
+        example: Tom
+        type: string
+      password:
+        example: "123456789"
+        type: string
+        format: password
+    required:
+    - email
+    - name
+    - password
+    type: object
+  user.tokensResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  user.updateUserRequest:
+    properties:
+      email:
+        type: string
+        format: email
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  user.signInResponse:
+    properties:
+      user: 
+        $ref: '#/definitions/user.user'
+      tokens:
+        $ref: '#/definitions/user.tokensResponse'
+
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: API Server for Warehouse Platform
+  title: Warehouse Platform
+  version: "0.1"
+paths:
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: refresh access and refresh tokens
+      parameters:
+      - description: refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user.refreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.tokensResponse'
+        "403":
+          description: forbidden
+          schema:
+            type: string
+        "500":
+          description: error message
+          schema:
+            type: string
+      summary: RefreshToken
+      tags:
+      - auth
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: login into system
+      parameters:
+      - description: sign in data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user.signInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.signInResponse'
+        "400":
+          description: error message
+          schema:
+            type: string
+        "401":
+          description: forbidden
+          schema:
+            type: string
+        "500":
+          description: error message
+          schema:
+            type: string
+      summary: SignIn
+      tags:
+      - auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: registration into system
+      parameters:
+      - description: sign up data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user.signUpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: Bad request or user with such email already exists
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: SignUp
+      tags:
+      - auth
+  /auth/log-out:
+    post:
+      description: logout system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+        "401":
+          description: unauthorized
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: LogOut
+      security:
+      - UsersAuth: []
+      tags:
+      - auth
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: get user by token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.user'
+        "404":
+          description: not found
+          schema:
+            type: string
+        "500":
+          description: error message
+          schema:
+            type: string
+      security:
+      - UsersAuth: []
+      summary: GetUser
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: update user
+      parameters:
+      - description: refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user.updateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: error message
+          schema:
+            type: string
+        "500":
+          description: error message
+          schema:
+            type: string
+      security:
+      - UsersAuth: []
+      summary: UpdateUser
+      tags:
+      - users
+securityDefinitions:
+  UsersAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
