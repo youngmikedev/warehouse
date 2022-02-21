@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+    postgres:
+        container_name: postgres
+        image: postgres:11-alpine
+        environment:
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PAS}
+            POSTGRES_DB: ${DB_NAME}
+            PGDATA: /data/postgres
+        volumes:
+            - ./.tmp/postgres:/data/postgres
+        ports:
+            - 5432:${DB_PORT}
+        # networks:
+        # - postgres
+        restart: unless-stopped
