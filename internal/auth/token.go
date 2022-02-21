@@ -10,31 +10,32 @@ const tokenLength = 30
 
 type RandTokenManager struct {
 	signingKey  string
+	rs          rand.Source
 	atExpiresAt time.Duration
 	rtExpiresAt time.Duration
 }
 
-func NewJWTManager(signingKey string, accessTokenExpiresAt, refreshTokenExpiresAt time.Duration) *RandTokenManager {
+func NewTokenManager(signingKey string, accessTokenExpiresAt, refreshTokenExpiresAt time.Duration) *RandTokenManager {
 	return &RandTokenManager{
 		signingKey:  signingKey,
+		rs:          rand.NewSource(time.Now().Unix()),
 		atExpiresAt: accessTokenExpiresAt,
 		rtExpiresAt: refreshTokenExpiresAt,
 	}
 }
 
 func (m *RandTokenManager) NewAccessToken() string {
-	return generateRandomString(tokenLength)
+	return m.generateRandomString(tokenLength)
 }
 
 func (m *RandTokenManager) NewRefreshToken() string {
-	return generateRandomString(tokenLength)
+	return m.generateRandomString(tokenLength)
 }
 
-func generateRandomString(len int) string {
+func (m *RandTokenManager) generateRandomString(len int) string {
 	b := make([]byte, len)
 
-	s := rand.NewSource(time.Now().Unix())
-	r := rand.New(s)
+	r := rand.New(m.rs)
 
 	_, err := r.Read(b)
 	if err != nil {
