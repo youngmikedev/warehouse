@@ -10,16 +10,23 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type cache interface {
+	Set(key string, value ShortSession)
+	Get(key string) (ShortSession, bool)
+	Delete(key string)
+}
 type UserService struct {
+	cache        cache
 	tokenManager auth.TokenManager
 	hashManager  auth.HashManager
 	repo         *repository.Repositories
 	log          *zerolog.Logger
 }
 
-func NewUserService(repo *repository.Repositories, tokenManager auth.TokenManager, hashManager auth.HashManager, logger *zerolog.Logger) *UserService {
+func NewUserService(repo *repository.Repositories, cache cache, tokenManager auth.TokenManager, hashManager auth.HashManager, logger *zerolog.Logger) *UserService {
 	sl := logger.With().Str("service", "user").Logger()
 	return &UserService{
+		cache:        cache,
 		tokenManager: tokenManager,
 		hashManager:  hashManager,
 		repo:         repo,
@@ -113,18 +120,31 @@ func (s *UserService) Update(ctx context.Context, user domain.User, password str
 }
 
 func (s *UserService) CheckAccessToken(ctx context.Context, token string) (sesID, userID int, err error) {
+	if ses, ok := s.cache.Get(token); ok {
+		if s.tokenManager.ValidateAccessToken(ses.UpdatedAt) {
+			return ses.SessionID, ses.SessionID, nil
+		}
+	}
+
 	ses, err := s.repo.GetSessionByAccess(ctx, token)
 	if err != nil {
 		return 0, 0, checkAppError(s.log, err, "CheckAccessToken.GetSessionByAccess")
 	}
 
-	if s.tokenManager.ValidateAccessToken(ses.UpdatedAt) {
+	if !s.tokenManager.ValidateAccessToken(ses.UpdatedAt) {
 		ses.Disabled = true
 		if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
 			return 0, 0, checkAppError(s.log, err, "CheckAccessToken.DisableSession")
 		}
 		return 0, 0, domain.ErrTokenExpired
 	}
+
+	s.cache.Set(token, ShortSession{
+		UserID:      ses.UserID,
+		SessionID:   ses.ID,
+		AccessToken: token,
+		UpdatedAt:   ses.UpdatedAt,
+	})
 
 	return ses.ID, ses.UserID, err
 }

@@ -26,12 +26,13 @@ type User interface {
 
 func NewServices(
 	repos *repository.Repositories,
+	cache cache,
 	tokenManager auth.TokenManager,
 	hasher auth.HashManager,
 	logger *zerolog.Logger,
 ) *Services {
 	return &Services{
-		User: NewUserService(repos, tokenManager, hasher, logger),
+		User: NewUserService(repos, cache, tokenManager, hasher, logger),
 	}
 }
 

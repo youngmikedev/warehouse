@@ -54,10 +54,11 @@ func Run() {
 
 	repos := repository.NewPostgresRepositories(postgresClient)
 
+	cache := service.NewCacheWithMaxLen(0)
 	tokenManager := auth.NewTokenManager(cfg.Token.SigningKey, time.Duration(cfg.Token.UTExpiresAt), time.Duration(cfg.Token.URTExpiresAT))
 	hashManager := auth.NewHashManager()
 	sl := logger.With().Str("from", "service").Logger()
-	services := service.NewServices(repos, tokenManager, hashManager, &sl)
+	services := service.NewServices(repos, cache, tokenManager, hashManager, &sl)
 
 	dl := logger.With().Str("from", "delivery").Logger()
 	httpServer, err := swagger.NewServer(services, cfg, &dl)
