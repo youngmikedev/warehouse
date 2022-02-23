@@ -56,10 +56,11 @@ func Run() {
 
 	tokenManager := auth.NewTokenManager(cfg.Token.SigningKey, time.Duration(cfg.Token.UTExpiresAt), time.Duration(cfg.Token.URTExpiresAT))
 	hashManager := auth.NewHashManager()
-	services := service.NewServices(repos, tokenManager, hashManager, &logger)
+	sl := logger.With().Str("from", "service").Logger()
+	services := service.NewServices(repos, tokenManager, hashManager, &sl)
 
-	l := logger.With().Str("from", "delivery").Logger()
-	httpServer, err := swagger.NewServer(services, cfg, &l)
+	dl := logger.With().Str("from", "delivery").Logger()
+	httpServer, err := swagger.NewServer(services, cfg, &dl)
 	if err != nil {
 		logger.Fatal().
 			Err(err).

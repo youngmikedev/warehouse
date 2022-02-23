@@ -8,7 +8,6 @@ import (
 	"github.com/imranzahaev/warehouse/internal/domain"
 	"github.com/imranzahaev/warehouse/internal/repository"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 type UserService struct {
@@ -19,14 +18,12 @@ type UserService struct {
 }
 
 func NewUserService(repo *repository.Repositories, tokenManager auth.TokenManager, hashManager auth.HashManager, logger *zerolog.Logger) *UserService {
-	sublogger := log.With().
-		Str("service", "user").
-		Logger()
+	sl := logger.With().Str("service", "user").Logger()
 	return &UserService{
 		tokenManager: tokenManager,
 		hashManager:  hashManager,
 		repo:         repo,
-		log:          &sublogger,
+		log:          &sl,
 	}
 }
 
