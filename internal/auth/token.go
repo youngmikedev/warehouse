@@ -46,9 +46,9 @@ func (m *RandTokenManager) generateRandomString(len int) string {
 }
 
 func (m *RandTokenManager) ValidateAccessToken(createdAt time.Time) bool {
-	return createdAt.Add(m.atExpiresAt).After(time.Now())
+	return createdAt.Add(m.atExpiresAt).Before(time.Now())
 }
 
 func (m *RandTokenManager) ValidateRefreshToken(createdAt time.Time) bool {
-	return createdAt.Add(m.rtExpiresAt).After(time.Now())
+	return createdAt.Add(m.rtExpiresAt).Before(time.Now())
 }
