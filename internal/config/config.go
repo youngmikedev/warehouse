@@ -98,12 +98,12 @@ func Init() (cfg *Config, err error) {
 	cfg.DB.Password = getEnv(keyDBPassword, defaultDBPassword)
 	cfg.DB.Name = getEnv(keyDBName, defaultDBName)
 
-	cfg.Token.SigningKey = getEnv(keyExpiresAt, defaultSigningKey)
+	cfg.Token.SigningKey = getEnv(keySigningKey, defaultSigningKey)
 	cfg.Token.UTExpiresAt, err = getIntEnv(keyExpiresAt, defaultExpiresAt)
 	if err != nil {
 		return
 	}
-	cfg.Token.URTExpiresAT, err = getIntEnv(keyExpiresAt, defaultRTExpiresAt)
+	cfg.Token.URTExpiresAT, err = getIntEnv(keyRTExpiresAt, defaultRTExpiresAt)
 	if err != nil {
 		return
 	}
