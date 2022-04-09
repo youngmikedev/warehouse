@@ -112,7 +112,7 @@ func (s *UserService) Update(ctx context.Context, user domain.User, password str
 		}
 	}
 
-	if err = s.repo.Update(ctx, user, password); err != nil {
+	if err = s.repo.User.Update(ctx, user, password); err != nil {
 		return checkAppError(s.log, err, "Update.Update")
 	}
 

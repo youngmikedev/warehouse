@@ -10,6 +10,7 @@ import (
 
 type Repositories struct {
 	User
+	Product
 }
 
 type User interface {
@@ -23,8 +24,16 @@ type User interface {
 	GetSessionByRefresh(ctx context.Context, token string) (domain.Session, error)
 }
 
+type Product interface {
+	Create(ctx context.Context, uid int, product domain.Product) (int, error)
+	Update(ctx context.Context, uid int, product domain.Product) error
+	Get(ctx context.Context, uid, id int) (domain.Product, error)
+	GetManyByFilter(ctx context.Context, filter domain.GetManyProductsFilter) (domain.GetManyProductsResponse, error)
+}
+
 func NewPostgresRepositories(client *ent.Client) *Repositories {
 	return &Repositories{
-		User: postgres.NewUsersRepo(client),
+		User:    postgres.NewUsersRepo(client),
+		Product: postgres.NewProductRepo(client),
 	}
 }
