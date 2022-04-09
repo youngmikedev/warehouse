@@ -2,7 +2,10 @@ package swagger
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/http/pprof"
+	"strings"
 	"time"
 
 	"github.com/go-openapi/errors"
@@ -15,6 +18,7 @@ import (
 	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi"
 	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations"
 	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/auth"
+	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/products"
 	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/users"
 	"github.com/imranzahaev/warehouse/internal/domain"
 	"github.com/imranzahaev/warehouse/internal/service"
@@ -34,6 +38,7 @@ func NewServer(services *service.Services, cfg *config.Config, logger *zerolog.L
 	server.GracefulTimeout = 10 * time.Second
 	server.Host = cfg.HTTP.Host
 	server.Port = cfg.HTTP.Port
+	// server.SetHandler()
 	server.SetHandler(configureAPI(api, services, logger))
 	return server, nil
 }
@@ -184,6 +189,132 @@ func configureAPI(api *operations.DeliveryAPI, services *service.Services, logge
 		return users.NewPutUserOK()
 	})
 
+	api.ProductsPostProductHandler = products.PostProductHandlerFunc(func(params products.PostProductParams, principal interface{}) middleware.Responder {
+		ctx := params.HTTPRequest.Context()
+		sp := principal.(*sessionPayload)
+		id, err := services.Product.Create(ctx, sp.uid,
+			domain.Product{
+				Article: params.Input.Article,
+				Name:    *params.Input.Name,
+				Price:   int(params.Input.Price),
+			})
+		if err != nil {
+			switch err {
+			case domain.ErrInternal:
+				return products.NewPostProductInternalServerError().WithPayload(domain.ErrInternal.Error())
+			default:
+				return products.NewPostProductBadRequest().WithPayload(err.Error())
+			}
+		}
+		return products.NewPostProductOK().WithPayload(int64(id))
+	})
+
+	api.ProductsPutProductProductIDHandler = products.PutProductProductIDHandlerFunc(func(params products.PutProductProductIDParams, principal interface{}) middleware.Responder {
+		ctx := params.HTTPRequest.Context()
+		sp := principal.(*sessionPayload)
+		if err := services.Product.Update(ctx, sp.uid,
+			domain.Product{
+				ID:      int(params.ProductID),
+				Article: params.Input.Article,
+				Name:    params.Input.Name,
+				Price:   int(params.Input.Price),
+			}); err != nil {
+			switch err {
+			case domain.ErrInternal:
+				return products.NewPutProductProductIDInternalServerError().WithPayload(domain.ErrInternal.Error())
+			default:
+				return products.NewPutProductProductIDBadRequest().WithPayload(err.Error())
+			}
+		}
+
+		return products.NewPutProductProductIDOK()
+	})
+
+	api.ProductsGetProductProductIDHandler = products.GetProductProductIDHandlerFunc(func(params products.GetProductProductIDParams, principal interface{}) middleware.Responder {
+		ctx := params.HTTPRequest.Context()
+		sp := principal.(*sessionPayload)
+		p, err := services.Product.Get(ctx, sp.uid, int(params.ProductID))
+		if err != nil {
+			switch err {
+			case domain.ErrUserNotFound:
+				return products.NewGetProductProductIDNotFound()
+			default:
+				return products.NewGetProductProductIDInternalServerError().WithPayload(err.Error())
+			}
+		}
+
+		return products.NewGetProductProductIDOK().WithPayload(&models.ProductProduct{
+			ID:        params.ProductID,
+			Article:   p.Article,
+			Name:      p.Name,
+			Price:     int64(p.Price),
+			CreatedAt: strfmt.Date(p.CreatedAt),
+		})
+	})
+
+	api.ProductsGetProductsHandler = products.GetProductsHandlerFunc(func(params products.GetProductsParams, principal interface{}) middleware.Responder {
+		var f domain.GetManyProductsFilter
+		if params.ArticleLike != nil {
+			f.ArticleLike = *params.ArticleLike
+		}
+		if params.NameLike != nil {
+			f.NameLike = *params.NameLike
+		}
+		if params.PriceFrom != nil {
+			f.PriceFrom = int(*params.PriceFrom)
+		}
+		if params.PriceTo != nil {
+			f.PriceTo = int(*params.PriceTo)
+		}
+		if params.P != nil {
+			f.Page = int(*params.P)
+		}
+		if params.L != nil {
+			f.Limit = int(*params.L)
+		}
+		if params.SortField != nil {
+			f.SortField = *params.SortField
+		}
+		if params.SortOrder != nil {
+			f.SortOrder = *params.SortOrder
+		}
+
+		ctx := params.HTTPRequest.Context()
+		sp := principal.(*sessionPayload)
+		f.UID = sp.uid
+		res, err := services.Product.GetManyByFilter(ctx, f)
+		if err != nil {
+			switch err {
+			case domain.ErrInternal:
+				return products.NewGetProductsInternalServerError().WithPayload(domain.ErrInternal.Error())
+			default:
+				return products.NewGetProductsBadRequest().WithPayload(err.Error())
+			}
+		}
+
+		ps := make([]*models.ProductProduct, 0, len(res.Products))
+		for i := 0; i < len(res.Products); i++ {
+			ps = append(ps, &models.ProductProduct{
+				ID:        int64(res.Products[i].ID),
+				Article:   res.Products[i].Article,
+				Name:      res.Products[i].Name,
+				Price:     int64(res.Products[i].Price),
+				CreatedAt: strfmt.Date(res.Products[i].CreatedAt),
+			})
+		}
+
+		fmt.Println(res)
+
+		return products.NewGetProductsOK().WithPayload(&models.ProductGetProductsResponse{
+			Products: ps,
+			Limit:    int64(res.Limit),
+			Page:     int64(res.Page),
+			Count:    int64(res.Count),
+		})
+	})
+
+	// api.AddMiddlewareFor("GET", "/debug/pprof/profile", pprofMiddleware)
+
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares), logger)
 }
 
@@ -198,6 +329,7 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 func setupGlobalMiddleware(handler http.Handler, logger *zerolog.Logger) http.Handler {
 	handler = addAccessLogging(handler, logger)
 	handler = cors.AllowAll().Handler(handler)
+	handler = pprofMiddleware(handler)
 
 	return handler
 }
@@ -211,3 +343,26 @@ func addAccessLogging(next http.Handler, logger *zerolog.Logger) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func pprofMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/debug/pprof/cmdline"):
+			pprof.Cmdline(w, r)
+		case strings.HasPrefix(r.URL.Path, "/debug/pprof/profile"):
+			pprof.Profile(w, r)
+		case strings.HasPrefix(r.URL.Path, "/debug/pprof/symbol"):
+			pprof.Symbol(w, r)
+		case strings.HasPrefix(r.URL.Path, "/debug/pprof/trace"):
+			pprof.Trace(w, r)
+		case strings.HasPrefix(r.URL.Path, "/debug/pprof/"):
+			pprof.Index(w, r)
+		default:
+			next.ServeHTTP(w, r)
+		}
+
+	})
+}
+
+// ab -k -c 8 -n 100000 -p test.json -T application/json -m POST -H 'accept: application/json' "http://localhost:8081/api/v1/auth/sign-in"
+// ab -k -c 8 -n 100000 -H 'accept: application/json' -H 'Authorization: 7c1794f4289da2cdba455ed3228afa61657160835ec294c4f3ac7af38c23' -m GET "http://localhost:8081/api/v1/user"
