@@ -122,7 +122,7 @@ func (s *UserService) Update(ctx context.Context, user domain.User, password str
 func (s *UserService) CheckAccessToken(ctx context.Context, token string) (sesID, userID int, err error) {
 	if ses, ok := s.cache.Get(token); ok {
 		if s.tokenManager.ValidateAccessToken(ses.UpdatedAt) {
-			return ses.SessionID, ses.SessionID, nil
+			return ses.SessionID, ses.UserID, nil
 		}
 	}
 
