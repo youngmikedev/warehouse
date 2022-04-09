@@ -19,8 +19,17 @@ const (
 	FieldPrice = "price"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeOwner holds the string denoting the owner edge name in mutations.
+	EdgeOwner = "owner"
 	// Table holds the table name of the product in the database.
 	Table = "products"
+	// OwnerTable is the table that holds the owner relation/edge.
+	OwnerTable = "products"
+	// OwnerInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	OwnerInverseTable = "users"
+	// OwnerColumn is the table column denoting the owner relation/edge.
+	OwnerColumn = "user_products"
 )
 
 // Columns holds all SQL columns for product fields.

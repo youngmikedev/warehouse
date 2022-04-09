@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // ProductUpdate is the builder for updating Product entities.
@@ -67,9 +68,26 @@ func (pu *ProductUpdate) SetNillableCreatedAt(t *time.Time) *ProductUpdate {
 	return pu
 }
 
+// SetOwnerID sets the "owner" edge to the User entity by ID.
+func (pu *ProductUpdate) SetOwnerID(id int) *ProductUpdate {
+	pu.mutation.SetOwnerID(id)
+	return pu
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (pu *ProductUpdate) SetOwner(u *User) *ProductUpdate {
+	return pu.SetOwnerID(u.ID)
+}
+
 // Mutation returns the ProductMutation object of the builder.
 func (pu *ProductUpdate) Mutation() *ProductMutation {
 	return pu.mutation
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (pu *ProductUpdate) ClearOwner() *ProductUpdate {
+	pu.mutation.ClearOwner()
+	return pu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -144,6 +162,9 @@ func (pu *ProductUpdate) check() error {
 			return &ValidationError{Name: "price", err: fmt.Errorf(`ent: validator failed for field "Product.price": %w`, err)}
 		}
 	}
+	if _, ok := pu.mutation.OwnerID(); pu.mutation.OwnerCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Product.owner"`)
+	}
 	return nil
 }
 
@@ -199,6 +220,41 @@ func (pu *ProductUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Value:  value,
 			Column: product.FieldCreatedAt,
 		})
+	}
+	if pu.mutation.OwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   product.OwnerTable,
+			Columns: []string{product.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   product.OwnerTable,
+			Columns: []string{product.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -258,9 +314,26 @@ func (puo *ProductUpdateOne) SetNillableCreatedAt(t *time.Time) *ProductUpdateOn
 	return puo
 }
 
+// SetOwnerID sets the "owner" edge to the User entity by ID.
+func (puo *ProductUpdateOne) SetOwnerID(id int) *ProductUpdateOne {
+	puo.mutation.SetOwnerID(id)
+	return puo
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (puo *ProductUpdateOne) SetOwner(u *User) *ProductUpdateOne {
+	return puo.SetOwnerID(u.ID)
+}
+
 // Mutation returns the ProductMutation object of the builder.
 func (puo *ProductUpdateOne) Mutation() *ProductMutation {
 	return puo.mutation
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (puo *ProductUpdateOne) ClearOwner() *ProductUpdateOne {
+	puo.mutation.ClearOwner()
+	return puo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -342,6 +415,9 @@ func (puo *ProductUpdateOne) check() error {
 			return &ValidationError{Name: "price", err: fmt.Errorf(`ent: validator failed for field "Product.price": %w`, err)}
 		}
 	}
+	if _, ok := puo.mutation.OwnerID(); puo.mutation.OwnerCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Product.owner"`)
+	}
 	return nil
 }
 
@@ -414,6 +490,41 @@ func (puo *ProductUpdateOne) sqlSave(ctx context.Context) (_node *Product, err e
 			Value:  value,
 			Column: product.FieldCreatedAt,
 		})
+	}
+	if puo.mutation.OwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   product.OwnerTable,
+			Columns: []string{product.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   product.OwnerTable,
+			Columns: []string{product.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Product{config: puo.config}
 	_spec.Assign = _node.assignValues

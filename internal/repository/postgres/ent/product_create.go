@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // ProductCreate is the builder for creating a Product entity.
@@ -50,6 +51,17 @@ func (pc *ProductCreate) SetNillableCreatedAt(t *time.Time) *ProductCreate {
 		pc.SetCreatedAt(*t)
 	}
 	return pc
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by ID.
+func (pc *ProductCreate) SetOwnerID(id int) *ProductCreate {
+	pc.mutation.SetOwnerID(id)
+	return pc
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (pc *ProductCreate) SetOwner(u *User) *ProductCreate {
+	return pc.SetOwnerID(u.ID)
 }
 
 // Mutation returns the ProductMutation object of the builder.
@@ -153,6 +165,9 @@ func (pc *ProductCreate) check() error {
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Product.created_at"`)}
 	}
+	if _, ok := pc.mutation.OwnerID(); !ok {
+		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required edge "Product.owner"`)}
+	}
 	return nil
 }
 
@@ -211,6 +226,26 @@ func (pc *ProductCreate) createSpec() (*Product, *sqlgraph.CreateSpec) {
 			Column: product.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if nodes := pc.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   product.OwnerTable,
+			Columns: []string{product.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_products = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

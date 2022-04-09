@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // Product is the model entity for the Product schema.
@@ -23,8 +24,34 @@ type Product struct {
 	// Price holds the value of the "price" field.
 	Price int `json:"price,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt     time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ProductQuery when eager-loading is set.
+	Edges         ProductEdges `json:"edges"`
 	user_products *int
+}
+
+// ProductEdges holds the relations/edges for other nodes in the graph.
+type ProductEdges struct {
+	// Owner holds the value of the owner edge.
+	Owner *User `json:"owner,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// OwnerOrErr returns the Owner value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProductEdges) OwnerOrErr() (*User, error) {
+	if e.loadedTypes[0] {
+		if e.Owner == nil {
+			// The edge owner was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.Owner, nil
+	}
+	return nil, &NotLoadedError{edge: "owner"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -95,6 +122,11 @@ func (pr *Product) assignValues(columns []string, values []interface{}) error {
 		}
 	}
 	return nil
+}
+
+// QueryOwner queries the "owner" edge of the Product entity.
+func (pr *Product) QueryOwner() *UserQuery {
+	return (&ProductClient{config: pr.config}).QueryOwner(pr)
 }
 
 // Update returns a builder for updating this Product.

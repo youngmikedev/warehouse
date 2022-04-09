@@ -222,6 +222,22 @@ func (c *ProductClient) GetX(ctx context.Context, id int) *Product {
 	return obj
 }
 
+// QueryOwner queries the owner edge of a Product.
+func (c *ProductClient) QueryOwner(pr *Product) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(product.Table, product.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, product.OwnerTable, product.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProductClient) Hooks() []Hook {
 	return c.hooks.Product
