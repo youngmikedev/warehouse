@@ -12,6 +12,7 @@ import (
 
 type Services struct {
 	User
+	Product
 }
 
 type User interface {
@@ -24,6 +25,13 @@ type User interface {
 	LogOut(ctx context.Context, accessToken string) error
 }
 
+type Product interface {
+	Create(ctx context.Context, uid int, product domain.Product) (id int, err error)
+	Update(ctx context.Context, uid int, product domain.Product) (err error)
+	Get(ctx context.Context, uid int, id int) (domain.Product, error)
+	GetManyByFilter(ctx context.Context, filter domain.GetManyProductsFilter) (domain.GetManyProductsResponse, error)
+}
+
 func NewServices(
 	repos *repository.Repositories,
 	cache cache,
@@ -32,7 +40,8 @@ func NewServices(
 	logger *zerolog.Logger,
 ) *Services {
 	return &Services{
-		User: NewUserService(repos, cache, tokenManager, hasher, logger),
+		User:    NewUserService(repos, cache, tokenManager, hasher, logger),
+		Product: NewProductService(repos, logger),
 	}
 }
 
