@@ -10,6 +10,7 @@ import (
 	"time"
 
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/imranzahaev/warehouse/internal/domain"
 	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -18,11 +19,15 @@ import (
 )
 
 const (
-	host     = "localhost"
-	port     = "5432"
-	user     = "user"
-	dbname   = "warehouse"
-	password = "example"
+	dbuser        = "user"
+	dbname        = "warehouse"
+	password      = "example"
+	dbhost        = "localhost"
+	dbport        = "5432"
+	dbExposedPort = "49194"
+
+	testat = "access_token"
+	testrt = "refresh_token"
 )
 
 var db *ent.Client
@@ -38,9 +43,13 @@ func TestMain(m *testing.M) {
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "postgres",
 		Tag:        "11-alpine",
+		// ExposedPorts: []string{dbExposedPort},
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			dbport + "/tcp": {{HostPort: dbExposedPort}},
+		},
 		Env: []string{
 			"POSTGRES_PASSWORD=" + password,
-			"POSTGRES_USER=" + user,
+			"POSTGRES_USER=" + dbuser,
 			"POSTGRES_DB=" + dbname,
 			"listen_addresses = '*'",
 		},
@@ -53,11 +62,12 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not start resource: %s", err)
 	}
 
-	hostAndPort := resource.GetHostPort(port + "/tcp")
-	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, password, hostAndPort, dbname)
+	hostAndPort := resource.GetHostPort(dbport + "/tcp")
+	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbuser, password, hostAndPort, dbname)
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
-
+	if err = resource.Expire(120); err != nil { // Tell docker to hard kill the container in 120 seconds
+		log.Fatalf("Could not set docker expire: %s", err)
+	}
 	var sqlDB *sql.DB
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
@@ -95,4 +105,36 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(code)
+}
+
+// createUserAndGetTokens create account with default email and name if they are empty
+func createUserAndGetTokens(t *testing.T, email, name string) (uid int, at, rt string) {
+	if email == "" {
+		email = "testemail@mail.com"
+	}
+	if name == "" {
+		name = "Jon"
+	}
+	r := &UsersRepo{
+		client: db,
+	}
+	id, err := r.Create(context.TODO(), domain.User{
+		Name:  name,
+		Email: email,
+	}, "strongpass")
+	if err != nil {
+		t.Fatalf("createUserAndGetToken.UsersRepo.Create() error = %v", err)
+	}
+
+	_, err = r.CreateSession(context.TODO(), domain.Session{
+		UserID:       id,
+		AccessToken:  testat,
+		RefreshToken: testrt,
+		ExpiresAt:    time.Hour,
+	})
+	if err != nil {
+		t.Fatalf("createUserAndGetToken.UsersRepo.CreateSession() error = %v", err)
+	}
+
+	return id, testat, testrt
 }
