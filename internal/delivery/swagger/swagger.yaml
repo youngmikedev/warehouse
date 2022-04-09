@@ -75,7 +75,53 @@ definitions:
         $ref: '#/definitions/user.user'
       tokens:
         $ref: '#/definitions/user.tokensResponse'
-
+    type: object
+  product.product:
+    properties:
+      created_at:
+        type: string
+        format: date
+      article:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+      id:
+        type: integer
+    type: object
+  product.createProductRequest:
+    properties:
+      article:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+    required:
+    - name
+    type: object
+  product.updateProductRequest:
+    properties:
+      article:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+    type: object
+  product.getProductsResponse:
+    properties:
+      products:
+        type: array
+        items:
+          $ref: '#/definitions/product.product'
+      count:
+        type: integer
+      page:
+        type: integer
+      limit:
+        type: integer
     type: object
 host: localhost:8081
 info:
@@ -249,6 +295,172 @@ paths:
       summary: UpdateUser
       tags:
       - users
+  /product:
+    post:
+      description: create product
+      parameters:
+      - description: new product data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/product.createProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: new product id
+          schema:
+            type: integer
+        "400":
+          description: error message
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: CreateProduct
+      security:
+      - UsersAuth: []
+      tags:
+      - products
+  /product/{productId}:
+    put:
+      description: update product
+      produces:
+      - application/json
+      parameters:
+      - description: product id
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - description: update product data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/product.updateProductRequest'
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: error message
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: UpdateProduct
+      security:
+      - UsersAuth: []
+      tags:
+      - products
+    get:
+      description: get product by id
+      parameters:
+      - description: product id
+        in: path
+        name: productId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/product.product'
+        "401":
+          description: unauthorized
+        "404":
+          description: not found
+          schema:
+            type: string
+        "500":
+          description: error message
+          schema:
+            type: string
+      security:
+      - UsersAuth: []
+      summary: GetProduct
+      tags:
+      - products
+  /products:
+    get:
+      description: get filtered products
+      parameters:
+      - description: article will contain this string
+        in: query
+        name: articleLike
+        type: string
+      - description: name will contain this string
+        in: query
+        name: nameLike
+        type: string
+      - description: price will be greater then or equal to this number
+        in: query
+        name: priceFrom
+        type: integer
+      - description: price will be less then or equal to this number
+        in: query
+        name: priceTo
+        type: integer
+      - description: page number
+        in: query
+        name: p
+        type: integer
+      - description: number of items to display 
+        in: query
+        name: l
+        type: integer
+      - description: sort order, default asc
+        in: query
+        name: sortOrder
+        type: string
+        enum: 
+        - asc
+        - desc
+        default: asc
+      - description: sort field, default id
+        in: query
+        name: sortField
+        type: string
+        enum:
+        - id
+        - article
+        - name
+        - price
+        - created
+        default: id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/product.getProductsResponse'
+        "400":
+          description: error message
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+        "500":
+          description: error message
+          schema:
+            type: string
+      security:
+      - UsersAuth: []
+      summary: GetProduct
+      tags:
+      - products
 securityDefinitions:
   UsersAuth:
     in: header
