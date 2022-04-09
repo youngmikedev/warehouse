@@ -200,6 +200,262 @@ func init() {
         }
       }
     },
+    "/product": {
+      "post": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "create product",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "CreateProduct",
+        "parameters": [
+          {
+            "description": "new product data",
+            "name": "input",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product.createProductRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "new product id",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "400": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "500": {
+            "description": "internal error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/product/{productId}": {
+      "get": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "get product by id",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "GetProduct",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "product id",
+            "name": "productId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "$ref": "#/definitions/product.product"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "update product",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "UpdateProduct",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "product id",
+            "name": "productId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "update product data",
+            "name": "input",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product.updateProductRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          },
+          "400": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "500": {
+            "description": "internal error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "get filtered products",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "GetProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "article will contain this string",
+            "name": "articleLike",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "name will contain this string",
+            "name": "nameLike",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "price will be greater then or equal to this number",
+            "name": "priceFrom",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "price will be less then or equal to this number",
+            "name": "priceTo",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page number",
+            "name": "p",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "number of items to display",
+            "name": "l",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string",
+            "default": "desc",
+            "description": "sort order, default desc",
+            "name": "sortOrder",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "id",
+              "article",
+              "name",
+              "price",
+              "created"
+            ],
+            "type": "string",
+            "default": "id",
+            "description": "sort field, default id",
+            "name": "sortField",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "$ref": "#/definitions/product.getProductsResponse"
+            }
+          },
+          "400": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "500": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "security": [
@@ -288,6 +544,78 @@ func init() {
     }
   },
   "definitions": {
+    "product.createProductRequest": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "article": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        }
+      }
+    },
+    "product.getProductsResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/product.product"
+          }
+        }
+      }
+    },
+    "product.product": {
+      "type": "object",
+      "properties": {
+        "article": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        }
+      }
+    },
+    "product.updateProductRequest": {
+      "type": "object",
+      "properties": {
+        "article": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        }
+      }
+    },
     "user.refreshTokenRequest": {
       "type": "object",
       "required": [
@@ -590,6 +918,262 @@ func init() {
         }
       }
     },
+    "/product": {
+      "post": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "create product",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "CreateProduct",
+        "parameters": [
+          {
+            "description": "new product data",
+            "name": "input",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product.createProductRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "new product id",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "400": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "500": {
+            "description": "internal error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/product/{productId}": {
+      "get": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "get product by id",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "GetProduct",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "product id",
+            "name": "productId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "$ref": "#/definitions/product.product"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "500": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "update product",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "UpdateProduct",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "product id",
+            "name": "productId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "update product data",
+            "name": "input",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/product.updateProductRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          },
+          "400": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "500": {
+            "description": "internal error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "security": [
+          {
+            "UsersAuth": []
+          }
+        ],
+        "description": "get filtered products",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "products"
+        ],
+        "summary": "GetProduct",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "article will contain this string",
+            "name": "articleLike",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "name will contain this string",
+            "name": "nameLike",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "price will be greater then or equal to this number",
+            "name": "priceFrom",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "price will be less then or equal to this number",
+            "name": "priceTo",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page number",
+            "name": "p",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "number of items to display",
+            "name": "l",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string",
+            "default": "desc",
+            "description": "sort order, default desc",
+            "name": "sortOrder",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "id",
+              "article",
+              "name",
+              "price",
+              "created"
+            ],
+            "type": "string",
+            "default": "id",
+            "description": "sort field, default id",
+            "name": "sortField",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "$ref": "#/definitions/product.getProductsResponse"
+            }
+          },
+          "400": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "500": {
+            "description": "error message",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "security": [
@@ -678,6 +1262,78 @@ func init() {
     }
   },
   "definitions": {
+    "product.createProductRequest": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "article": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        }
+      }
+    },
+    "product.getProductsResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/product.product"
+          }
+        }
+      }
+    },
+    "product.product": {
+      "type": "object",
+      "properties": {
+        "article": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        }
+      }
+    },
+    "product.updateProductRequest": {
+      "type": "object",
+      "properties": {
+        "article": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        }
+      }
+    },
     "user.refreshTokenRequest": {
       "type": "object",
       "required": [

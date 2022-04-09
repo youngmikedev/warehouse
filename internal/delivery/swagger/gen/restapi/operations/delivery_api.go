@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/auth"
+	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/products"
 	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/users"
 )
 
@@ -45,6 +46,12 @@ func NewDeliveryAPI(spec *loads.Document) *DeliveryAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
+		ProductsGetProductProductIDHandler: products.GetProductProductIDHandlerFunc(func(params products.GetProductProductIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation products.GetProductProductID has not yet been implemented")
+		}),
+		ProductsGetProductsHandler: products.GetProductsHandlerFunc(func(params products.GetProductsParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation products.GetProducts has not yet been implemented")
+		}),
 		UsersGetUserHandler: users.GetUserHandlerFunc(func(params users.GetUserParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
 		}),
@@ -59,6 +66,12 @@ func NewDeliveryAPI(spec *loads.Document) *DeliveryAPI {
 		}),
 		AuthPostAuthSignUpHandler: auth.PostAuthSignUpHandlerFunc(func(params auth.PostAuthSignUpParams) middleware.Responder {
 			return middleware.NotImplemented("operation auth.PostAuthSignUp has not yet been implemented")
+		}),
+		ProductsPostProductHandler: products.PostProductHandlerFunc(func(params products.PostProductParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation products.PostProduct has not yet been implemented")
+		}),
+		ProductsPutProductProductIDHandler: products.PutProductProductIDHandlerFunc(func(params products.PutProductProductIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation products.PutProductProductID has not yet been implemented")
 		}),
 		UsersPutUserHandler: users.PutUserHandlerFunc(func(params users.PutUserParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation users.PutUser has not yet been implemented")
@@ -113,6 +126,10 @@ type DeliveryAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// ProductsGetProductProductIDHandler sets the operation handler for the get product product ID operation
+	ProductsGetProductProductIDHandler products.GetProductProductIDHandler
+	// ProductsGetProductsHandler sets the operation handler for the get products operation
+	ProductsGetProductsHandler products.GetProductsHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
 	UsersGetUserHandler users.GetUserHandler
 	// AuthPostAuthLogOutHandler sets the operation handler for the post auth log out operation
@@ -123,6 +140,10 @@ type DeliveryAPI struct {
 	AuthPostAuthSignInHandler auth.PostAuthSignInHandler
 	// AuthPostAuthSignUpHandler sets the operation handler for the post auth sign up operation
 	AuthPostAuthSignUpHandler auth.PostAuthSignUpHandler
+	// ProductsPostProductHandler sets the operation handler for the post product operation
+	ProductsPostProductHandler products.PostProductHandler
+	// ProductsPutProductProductIDHandler sets the operation handler for the put product product ID operation
+	ProductsPutProductProductIDHandler products.PutProductProductIDHandler
 	// UsersPutUserHandler sets the operation handler for the put user operation
 	UsersPutUserHandler users.PutUserHandler
 
@@ -206,6 +227,12 @@ func (o *DeliveryAPI) Validate() error {
 		unregistered = append(unregistered, "AuthorizationAuth")
 	}
 
+	if o.ProductsGetProductProductIDHandler == nil {
+		unregistered = append(unregistered, "products.GetProductProductIDHandler")
+	}
+	if o.ProductsGetProductsHandler == nil {
+		unregistered = append(unregistered, "products.GetProductsHandler")
+	}
 	if o.UsersGetUserHandler == nil {
 		unregistered = append(unregistered, "users.GetUserHandler")
 	}
@@ -220,6 +247,12 @@ func (o *DeliveryAPI) Validate() error {
 	}
 	if o.AuthPostAuthSignUpHandler == nil {
 		unregistered = append(unregistered, "auth.PostAuthSignUpHandler")
+	}
+	if o.ProductsPostProductHandler == nil {
+		unregistered = append(unregistered, "products.PostProductHandler")
+	}
+	if o.ProductsPutProductProductIDHandler == nil {
+		unregistered = append(unregistered, "products.PutProductProductIDHandler")
 	}
 	if o.UsersPutUserHandler == nil {
 		unregistered = append(unregistered, "users.PutUserHandler")
@@ -324,6 +357,14 @@ func (o *DeliveryAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/product/{productId}"] = products.NewGetProductProductID(o.context, o.ProductsGetProductProductIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/products"] = products.NewGetProducts(o.context, o.ProductsGetProductsHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/user"] = users.NewGetUser(o.context, o.UsersGetUserHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -341,6 +382,14 @@ func (o *DeliveryAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/auth/sign-up"] = auth.NewPostAuthSignUp(o.context, o.AuthPostAuthSignUpHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/product"] = products.NewPostProduct(o.context, o.ProductsPostProductHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/product/{productId}"] = products.NewPutProductProductID(o.context, o.ProductsPutProductProductIDHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
