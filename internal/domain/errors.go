@@ -37,7 +37,8 @@ func (e AppError) Error() string {
 
 var (
 	ErrUserNotFound      error = AppError{errors.New("user doesn't exists")}
-	ErrSessionNotFound   error = AppError{errors.New("user doesn't exists")}
+	ErrProductNotFound   error = AppError{errors.New("product doesn't exists")}
+	ErrSessionNotFound   error = AppError{errors.New("session doesn't exists")}
 	ErrUserAlreadyExists error = AppError{errors.New("user with such email already exists")}
 	ErrInvalidEmail      error = AppError{&ValidationError{
 		Field: "email",
