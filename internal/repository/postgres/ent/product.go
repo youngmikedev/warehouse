@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // Product is the model entity for the Product schema.

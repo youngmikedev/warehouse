@@ -11,10 +11,10 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations"
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/auth"
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/users"
 	"github.com/rs/cors"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/restapi/operations"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/restapi/operations/auth"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/restapi/operations/users"
 )
 
 //go:generate swagger generate server --target ../../gen --name Delivery --spec ../../swagger.yaml --principal interface{} --exclude-main

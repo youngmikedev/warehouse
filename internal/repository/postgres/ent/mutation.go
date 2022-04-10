@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/predicate"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/session"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 
 	"entgo.io/ent"
 )

@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/migrate"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/migrate"
 
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/session"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"

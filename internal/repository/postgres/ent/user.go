@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // User is the model entity for the User schema.

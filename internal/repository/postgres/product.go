@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/imranzahaev/warehouse/internal/domain"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
+	"github.com/youngmikedev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/predicate"
 
-	entproduct "github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	entproduct "github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 )
 
 type ProductRepo struct {

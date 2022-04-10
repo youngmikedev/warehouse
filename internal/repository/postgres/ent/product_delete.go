@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/predicate"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
 )
 
 // ProductDelete is the builder for deleting a Product entity.

@@ -5,11 +5,11 @@ import (
 	"os"
 	"testing"
 
-	authmock "github.com/imranzahaev/warehouse/internal/auth/mocks"
-	"github.com/imranzahaev/warehouse/internal/domain"
-	"github.com/imranzahaev/warehouse/internal/repository"
-	repomocks "github.com/imranzahaev/warehouse/internal/repository/mocks"
 	"github.com/rs/zerolog"
+	authmock "github.com/youngmikedev/warehouse/internal/auth/mocks"
+	"github.com/youngmikedev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/repository"
+	repomocks "github.com/youngmikedev/warehouse/internal/repository/mocks"
 )
 
 func TestUserService_SignUp(t *testing.T) {

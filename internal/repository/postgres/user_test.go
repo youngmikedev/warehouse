@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/imranzahaev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/domain"
 )
 
 func TestUsersRepo(t *testing.T) {

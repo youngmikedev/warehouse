@@ -11,10 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/predicate"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/predicate"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/session"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // UserUpdate is the builder for updating User entities.

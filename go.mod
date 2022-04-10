@@ -1,4 +1,4 @@
-module github.com/imranzahaev/warehouse
+module github.com/youngmikedev/warehouse
 
 go 1.17
 

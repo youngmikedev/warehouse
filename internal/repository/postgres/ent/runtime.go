@@ -5,10 +5,10 @@ package ent
 import (
 	"time"
 
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/product"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/schema"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/session"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent/user"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/product"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/schema"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/session"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

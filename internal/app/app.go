@@ -6,14 +6,14 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/imranzahaev/warehouse/internal/auth"
-	"github.com/imranzahaev/warehouse/internal/config"
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger"
-	"github.com/imranzahaev/warehouse/internal/repository"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres"
-	"github.com/imranzahaev/warehouse/internal/service"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
+	"github.com/youngmikedev/warehouse/internal/auth"
+	"github.com/youngmikedev/warehouse/internal/config"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger"
+	"github.com/youngmikedev/warehouse/internal/repository"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres"
+	"github.com/youngmikedev/warehouse/internal/service"
 )
 
 func Run() {

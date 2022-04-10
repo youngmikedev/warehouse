@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/imranzahaev/warehouse/internal/auth"
-	"github.com/imranzahaev/warehouse/internal/domain"
-	"github.com/imranzahaev/warehouse/internal/repository"
 	"github.com/rs/zerolog"
+	"github.com/youngmikedev/warehouse/internal/auth"
+	"github.com/youngmikedev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/repository"
 )
 
 type Services struct {

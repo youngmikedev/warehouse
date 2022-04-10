@@ -17,7 +17,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/models"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/models"
 )
 
 // NewPutProductProductIDParams creates a new PutProductProductIDParams object

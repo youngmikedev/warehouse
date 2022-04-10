@@ -10,10 +10,10 @@ import (
 	"time"
 
 	entsql "entgo.io/ent/dialect/sql"
-	"github.com/imranzahaev/warehouse/internal/domain"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/youngmikedev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent"
 
 	_ "github.com/lib/pq"
 )

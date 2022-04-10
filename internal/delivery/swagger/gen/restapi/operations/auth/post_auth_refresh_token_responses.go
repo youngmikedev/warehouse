@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/models"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/models"
 )
 
 // PostAuthRefreshTokenOKCode is the HTTP code returned for type PostAuthRefreshTokenOK

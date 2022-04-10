@@ -19,9 +19,9 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/auth"
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/products"
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/restapi/operations/users"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/restapi/operations/auth"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/restapi/operations/products"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/restapi/operations/users"
 )
 
 // NewDeliveryAPI creates a new Delivery instance

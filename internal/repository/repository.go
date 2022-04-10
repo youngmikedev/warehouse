@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
-	"github.com/imranzahaev/warehouse/internal/domain"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres"
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
+	"github.com/youngmikedev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent"
 )
 
 type Repositories struct {

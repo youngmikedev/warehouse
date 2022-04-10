@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 
-	"github.com/imranzahaev/warehouse/internal/delivery/swagger/gen/models"
+	"github.com/youngmikedev/warehouse/internal/delivery/swagger/gen/models"
 )
 
 // NewPutUserParams creates a new PutUserParams object

@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/imranzahaev/warehouse/internal/domain"
-	"github.com/imranzahaev/warehouse/internal/repository"
 	"github.com/rs/zerolog"
+	"github.com/youngmikedev/warehouse/internal/domain"
+	"github.com/youngmikedev/warehouse/internal/repository"
 )
 
 type ProductService struct {

@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/imranzahaev/warehouse/internal/repository/postgres/ent"
+	"github.com/youngmikedev/warehouse/internal/repository/postgres/ent"
 )
 
 // The ProductFunc type is an adapter to allow the use of ordinary
