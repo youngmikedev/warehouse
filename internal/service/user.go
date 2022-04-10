@@ -45,7 +45,12 @@ func (s *UserService) SignUp(ctx context.Context, user domain.User, password str
 	}
 	_, err = s.repo.User.Create(ctx, user, pwd)
 	if err != nil {
-		return checkAppError(s.log, err, "SignUp.Create")
+		return checkAppError(
+			"SignUp.Create",
+			err,
+			s.log.Error().
+				Str("email", user.Email),
+		)
 	}
 
 	return nil
@@ -63,15 +68,22 @@ func (s *UserService) SignIn(ctx context.Context, login, password string) (SignI
 		if errors.Is(err, domain.ErrUserNotFound) {
 			s.log.Info().
 				Str("login", login).
+				Str("invalid", "email").
 				Msg("failed login")
 			return SignInResponse{}, domain.ErrInvalidLoginOrPassword
 		}
-		return SignInResponse{}, checkAppError(s.log, err, "SignIn.GetByLogin")
+		return SignInResponse{}, checkAppError(
+			"SignIn.GetByLogin",
+			err,
+			s.log.Error().
+				Str("email", login),
+		)
 	}
 
 	if !s.hashManager.Validate(hpwd, password) {
 		s.log.Info().
 			Str("login", login).
+			Str("invalid", "password").
 			Msg("failed login")
 		return SignInResponse{}, domain.ErrInvalidLoginOrPassword
 	}
@@ -85,7 +97,13 @@ func (s *UserService) SignIn(ctx context.Context, login, password string) (SignI
 		RefreshToken: rt,
 	})
 	if err != nil {
-		return SignInResponse{}, checkAppError(s.log, err, "SignIn.CreateSession")
+		return SignInResponse{}, checkAppError(
+			"SignIn.CreateSession",
+			err,
+			s.log.Error().
+				Str("email", login).
+				Int("uid", u.ID),
+		)
 	}
 
 	return SignInResponse{AccessToken: at, RefreshToken: rt, User: u}, nil
@@ -94,7 +112,12 @@ func (s *UserService) SignIn(ctx context.Context, login, password string) (SignI
 func (s *UserService) Get(ctx context.Context, userID int) (domain.User, error) {
 	u, _, err := s.repo.User.Get(ctx, userID)
 	if err != nil {
-		return domain.User{}, checkAppError(s.log, err, "Get.Get")
+		return domain.User{}, checkAppError(
+			"Get.Get",
+			err,
+			s.log.Error().
+				Int("uid", userID),
+		)
 	}
 
 	return u, nil
@@ -113,7 +136,12 @@ func (s *UserService) Update(ctx context.Context, user domain.User, password str
 	}
 
 	if err = s.repo.User.Update(ctx, user, password); err != nil {
-		return checkAppError(s.log, err, "Update.Update")
+		return checkAppError(
+			"Update.Update",
+			err,
+			s.log.Error().
+				Int("uid", user.ID),
+		)
 	}
 
 	return nil
@@ -128,13 +156,23 @@ func (s *UserService) CheckAccessToken(ctx context.Context, token string) (sesID
 
 	ses, err := s.repo.GetSessionByAccess(ctx, token)
 	if err != nil {
-		return 0, 0, checkAppError(s.log, err, "CheckAccessToken.GetSessionByAccess")
+		return 0, 0, checkAppError(
+			"CheckAccessToken.GetSessionByAccess",
+			err,
+			s.log.Error(),
+		)
 	}
 
 	if !s.tokenManager.ValidateAccessToken(ses.UpdatedAt) {
 		ses.Disabled = true
 		if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
-			return 0, 0, checkAppError(s.log, err, "CheckAccessToken.DisableSession")
+			return 0, 0, checkAppError(
+				"CheckAccessToken.UpdateSession",
+				err,
+				s.log.Error().
+					Int("uid", ses.UserID).
+					Int("session id", ses.ID),
+			)
 		}
 		return 0, 0, domain.ErrTokenExpired
 	}
@@ -152,13 +190,23 @@ func (s *UserService) CheckAccessToken(ctx context.Context, token string) (sesID
 func (s *UserService) RefreshTokens(ctx context.Context, oldRefreshToken string) (accessToken, refreshToken string, err error) {
 	ses, err := s.repo.GetSessionByRefresh(ctx, oldRefreshToken)
 	if err != nil {
-		return "", "", checkAppError(s.log, err, "RefreshTokens.GetSessionByRefresh")
+		return "", "", checkAppError(
+			"RefreshTokens.GetSessionByRefresh",
+			err,
+			s.log.Error(),
+		)
 	}
 
 	if s.tokenManager.ValidateRefreshToken(ses.UpdatedAt) {
 		ses.Disabled = true
 		if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
-			return "", "", checkAppError(s.log, err, "RefreshTokens.DisableSession")
+			return "", "", checkAppError(
+				"RefreshTokens.DisableSession",
+				err,
+				s.log.Error().
+					Int("uid", ses.UserID).
+					Int("session id", ses.ID),
+			)
 		}
 		return "", "", domain.ErrTokenExpired
 	}
@@ -167,7 +215,13 @@ func (s *UserService) RefreshTokens(ctx context.Context, oldRefreshToken string)
 	ses.RefreshToken = s.tokenManager.NewRefreshToken()
 
 	if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
-		return "", "", checkAppError(s.log, err, "RefreshTokens.UpdateSession")
+		return "", "", checkAppError(
+			"RefreshTokens.UpdateSession",
+			err,
+			s.log.Error().
+				Int("uid", ses.UserID).
+				Int("session id", ses.ID),
+		)
 	}
 
 	return ses.AccessToken, ses.RefreshToken, nil
@@ -176,12 +230,22 @@ func (s *UserService) RefreshTokens(ctx context.Context, oldRefreshToken string)
 func (s *UserService) LogOut(ctx context.Context, accessToken string) error {
 	ses, err := s.repo.GetSessionByAccess(ctx, accessToken)
 	if err != nil {
-		return checkAppError(s.log, err, "LogOut.GetSessionByRefresh")
+		return checkAppError(
+			"LogOut.GetSessionByAccess",
+			err,
+			s.log.Error(),
+		)
 	}
 
 	ses.Disabled = true
 	if err = s.repo.User.UpdateSession(ctx, ses); err != nil {
-		return checkAppError(s.log, err, "LogOut.DisableSession")
+		return checkAppError(
+			"LogOut.UpdateSession",
+			err,
+			s.log.Error().
+				Int("uid", ses.UserID).
+				Int("session id", ses.ID),
+		)
 	}
 
 	return nil

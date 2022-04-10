@@ -45,9 +45,9 @@ func NewServices(
 	}
 }
 
-func checkAppError(l *zerolog.Logger, err error, fname string) error {
+func checkAppError(fname string, err error, e *zerolog.Event) error {
 	if !errors.As(err, &domain.AppError{}) {
-		l.Error().
+		e.
 			Err(err).
 			Str("func", fname).
 			Msg("internal error")
