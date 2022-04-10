@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// NewClient established connection to a mongoDb instance using provided URI and auth credentials
+// NewClient established connection to a postrges instance using provided URI and auth credentials
 func NewClient(host, port, user, dbname, password string) (*ent.Client, error) {
 	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, host, port, dbname)
 	sqlDB, err := sql.Open("postgres", databaseUrl)
